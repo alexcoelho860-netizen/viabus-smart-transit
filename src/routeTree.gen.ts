@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PassageiroRouteImport } from './routes/passageiro'
+import { Route as PassageiroIndexRouteImport } from './routes/passageiro.index'
+import { Route as PassageiroLinhasRouteImport } from './routes/passageiro.linhas'
+import { Route as PassageiroMapaRouteImport } from './routes/passageiro.mapa'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +32,88 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PassageiroRoute = PassageiroRouteImport.update({
+  id: '/passageiro',
+  path: '/passageiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassageiroIndexRoute = PassageiroIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroLinhasRoute = PassageiroLinhasRouteImport.update({
+  id: '/linhas',
+  path: '/linhas',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroMapaRoute = PassageiroMapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => PassageiroRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/passageiro': typeof PassageiroRouteWithChildren
+  '/passageiro/linhas': typeof PassageiroLinhasRoute
+  '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/passageiro/linhas': typeof PassageiroLinhasRoute
+  '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro': typeof PassageiroIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/passageiro': typeof PassageiroRouteWithChildren
+  '/passageiro/linhas': typeof PassageiroLinhasRoute
+  '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo' | '/login'
+  fullPaths:
+    | '/'
+    | '/demo'
+    | '/login'
+    | '/passageiro'
+    | '/passageiro/linhas'
+    | '/passageiro/mapa'
+    | '/passageiro/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/login'
-  id: '__root__' | '/' | '/demo' | '/login'
+  to:
+    | '/'
+    | '/demo'
+    | '/login'
+    | '/passageiro/linhas'
+    | '/passageiro/mapa'
+    | '/passageiro'
+  id:
+    | '__root__'
+    | '/'
+    | '/demo'
+    | '/login'
+    | '/passageiro'
+    | '/passageiro/linhas'
+    | '/passageiro/mapa'
+    | '/passageiro/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DemoRoute: typeof DemoRoute
   LoginRoute: typeof LoginRoute
+  PassageiroRoute: typeof PassageiroRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +139,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/passageiro': {
+      id: '/passageiro'
+      path: '/passageiro'
+      fullPath: '/passageiro'
+      preLoaderRoute: typeof PassageiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passageiro/': {
+      id: '/passageiro/'
+      path: '/'
+      fullPath: '/passageiro/'
+      preLoaderRoute: typeof PassageiroIndexRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/linhas': {
+      id: '/passageiro/linhas'
+      path: '/linhas'
+      fullPath: '/passageiro/linhas'
+      preLoaderRoute: typeof PassageiroLinhasRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/mapa': {
+      id: '/passageiro/mapa'
+      path: '/mapa'
+      fullPath: '/passageiro/mapa'
+      preLoaderRoute: typeof PassageiroMapaRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
   }
 }
+
+interface PassageiroRouteChildren {
+  PassageiroLinhasRoute: typeof PassageiroLinhasRoute
+  PassageiroMapaRoute: typeof PassageiroMapaRoute
+  PassageiroIndexRoute: typeof PassageiroIndexRoute
+}
+
+const PassageiroRouteChildren: PassageiroRouteChildren = {
+  PassageiroLinhasRoute: PassageiroLinhasRoute,
+  PassageiroMapaRoute: PassageiroMapaRoute,
+  PassageiroIndexRoute: PassageiroIndexRoute,
+}
+
+const PassageiroRouteWithChildren = PassageiroRoute._addFileChildren(
+  PassageiroRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemoRoute: DemoRoute,
   LoginRoute: LoginRoute,
+  PassageiroRoute: PassageiroRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
