@@ -14,8 +14,12 @@ import { Route as DemoRouteImport } from './routes/demo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PassageiroRouteImport } from './routes/passageiro'
 import { Route as PassageiroIndexRouteImport } from './routes/passageiro.index'
+import { Route as PassageiroFavoritosRouteImport } from './routes/passageiro.favoritos'
 import { Route as PassageiroLinhasRouteImport } from './routes/passageiro.linhas'
 import { Route as PassageiroMapaRouteImport } from './routes/passageiro.mapa'
+import { Route as PassageiroNotificacoesRouteImport } from './routes/passageiro.notificacoes'
+import { Route as PassageiroPerfilRouteImport } from './routes/passageiro.perfil'
+import { Route as PassageiroPontosRouteImport } from './routes/passageiro.pontos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -42,6 +46,11 @@ const PassageiroIndexRoute = PassageiroIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PassageiroRoute,
 } as any)
+const PassageiroFavoritosRoute = PassageiroFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => PassageiroRoute,
+} as any)
 const PassageiroLinhasRoute = PassageiroLinhasRouteImport.update({
   id: '/linhas',
   path: '/linhas',
@@ -52,22 +61,45 @@ const PassageiroMapaRoute = PassageiroMapaRouteImport.update({
   path: '/mapa',
   getParentRoute: () => PassageiroRoute,
 } as any)
+const PassageiroNotificacoesRoute = PassageiroNotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroPerfilRoute = PassageiroPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroPontosRoute = PassageiroPontosRouteImport.update({
+  id: '/pontos',
+  path: '/pontos',
+  getParentRoute: () => PassageiroRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/passageiro': typeof PassageiroRouteWithChildren
+  '/passageiro/favoritos': typeof PassageiroFavoritosRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
+  '/passageiro/perfil': typeof PassageiroPerfilRoute
+  '/passageiro/pontos': typeof PassageiroPontosRoute
   '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/passageiro/favoritos': typeof PassageiroFavoritosRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
+  '/passageiro/perfil': typeof PassageiroPerfilRoute
+  '/passageiro/pontos': typeof PassageiroPontosRoute
   '/passageiro': typeof PassageiroIndexRoute
 }
 export interface FileRoutesById {
@@ -76,8 +108,12 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/passageiro': typeof PassageiroRouteWithChildren
+  '/passageiro/favoritos': typeof PassageiroFavoritosRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
+  '/passageiro/perfil': typeof PassageiroPerfilRoute
+  '/passageiro/pontos': typeof PassageiroPontosRoute
   '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRouteTypes {
@@ -87,16 +123,24 @@ export interface FileRouteTypes {
     | '/demo'
     | '/login'
     | '/passageiro'
+    | '/passageiro/favoritos'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
+    | '/passageiro/notificacoes'
+    | '/passageiro/perfil'
+    | '/passageiro/pontos'
     | '/passageiro/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/demo'
     | '/login'
+    | '/passageiro/favoritos'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
+    | '/passageiro/notificacoes'
+    | '/passageiro/perfil'
+    | '/passageiro/pontos'
     | '/passageiro'
   id:
     | '__root__'
@@ -104,8 +148,12 @@ export interface FileRouteTypes {
     | '/demo'
     | '/login'
     | '/passageiro'
+    | '/passageiro/favoritos'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
+    | '/passageiro/notificacoes'
+    | '/passageiro/perfil'
+    | '/passageiro/pontos'
     | '/passageiro/'
   fileRoutesById: FileRoutesById
 }
@@ -153,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassageiroIndexRouteImport
       parentRoute: typeof PassageiroRoute
     }
+    '/passageiro/favoritos': {
+      id: '/passageiro/favoritos'
+      path: '/favoritos'
+      fullPath: '/passageiro/favoritos'
+      preLoaderRoute: typeof PassageiroFavoritosRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
     '/passageiro/linhas': {
       id: '/passageiro/linhas'
       path: '/linhas'
@@ -167,18 +222,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassageiroMapaRouteImport
       parentRoute: typeof PassageiroRoute
     }
+    '/passageiro/notificacoes': {
+      id: '/passageiro/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/passageiro/notificacoes'
+      preLoaderRoute: typeof PassageiroNotificacoesRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/perfil': {
+      id: '/passageiro/perfil'
+      path: '/perfil'
+      fullPath: '/passageiro/perfil'
+      preLoaderRoute: typeof PassageiroPerfilRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/pontos': {
+      id: '/passageiro/pontos'
+      path: '/pontos'
+      fullPath: '/passageiro/pontos'
+      preLoaderRoute: typeof PassageiroPontosRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
   }
 }
 
 interface PassageiroRouteChildren {
+  PassageiroFavoritosRoute: typeof PassageiroFavoritosRoute
   PassageiroLinhasRoute: typeof PassageiroLinhasRoute
   PassageiroMapaRoute: typeof PassageiroMapaRoute
+  PassageiroNotificacoesRoute: typeof PassageiroNotificacoesRoute
+  PassageiroPerfilRoute: typeof PassageiroPerfilRoute
+  PassageiroPontosRoute: typeof PassageiroPontosRoute
   PassageiroIndexRoute: typeof PassageiroIndexRoute
 }
 
 const PassageiroRouteChildren: PassageiroRouteChildren = {
+  PassageiroFavoritosRoute: PassageiroFavoritosRoute,
   PassageiroLinhasRoute: PassageiroLinhasRoute,
   PassageiroMapaRoute: PassageiroMapaRoute,
+  PassageiroNotificacoesRoute: PassageiroNotificacoesRoute,
+  PassageiroPerfilRoute: PassageiroPerfilRoute,
+  PassageiroPontosRoute: PassageiroPontosRoute,
   PassageiroIndexRoute: PassageiroIndexRoute,
 }
 
