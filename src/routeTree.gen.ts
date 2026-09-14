@@ -10,33 +10,158 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PassageiroRouteImport } from './routes/passageiro'
+import { Route as PassageiroIndexRouteImport } from './routes/passageiro.index'
+import { Route as PassageiroFavoritosRouteImport } from './routes/passageiro.favoritos'
+import { Route as PassageiroLinhasRouteImport } from './routes/passageiro.linhas'
+import { Route as PassageiroMapaRouteImport } from './routes/passageiro.mapa'
+import { Route as PassageiroNotificacoesRouteImport } from './routes/passageiro.notificacoes'
+import { Route as PassageiroPerfilRouteImport } from './routes/passageiro.perfil'
+import { Route as PassageiroPontosRouteImport } from './routes/passageiro.pontos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassageiroRoute = PassageiroRouteImport.update({
+  id: '/passageiro',
+  path: '/passageiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassageiroIndexRoute = PassageiroIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroFavoritosRoute = PassageiroFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroLinhasRoute = PassageiroLinhasRouteImport.update({
+  id: '/linhas',
+  path: '/linhas',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroMapaRoute = PassageiroMapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroNotificacoesRoute = PassageiroNotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroPerfilRoute = PassageiroPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroPontosRoute = PassageiroPontosRouteImport.update({
+  id: '/pontos',
+  path: '/pontos',
+  getParentRoute: () => PassageiroRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
+  '/login': typeof LoginRoute
+  '/passageiro': typeof PassageiroRouteWithChildren
+  '/passageiro/favoritos': typeof PassageiroFavoritosRoute
+  '/passageiro/linhas': typeof PassageiroLinhasRoute
+  '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
+  '/passageiro/perfil': typeof PassageiroPerfilRoute
+  '/passageiro/pontos': typeof PassageiroPontosRoute
+  '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
+  '/login': typeof LoginRoute
+  '/passageiro/favoritos': typeof PassageiroFavoritosRoute
+  '/passageiro/linhas': typeof PassageiroLinhasRoute
+  '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
+  '/passageiro/perfil': typeof PassageiroPerfilRoute
+  '/passageiro/pontos': typeof PassageiroPontosRoute
+  '/passageiro': typeof PassageiroIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
+  '/login': typeof LoginRoute
+  '/passageiro': typeof PassageiroRouteWithChildren
+  '/passageiro/favoritos': typeof PassageiroFavoritosRoute
+  '/passageiro/linhas': typeof PassageiroLinhasRoute
+  '/passageiro/mapa': typeof PassageiroMapaRoute
+  '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
+  '/passageiro/perfil': typeof PassageiroPerfilRoute
+  '/passageiro/pontos': typeof PassageiroPontosRoute
+  '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/demo'
+    | '/login'
+    | '/passageiro'
+    | '/passageiro/favoritos'
+    | '/passageiro/linhas'
+    | '/passageiro/mapa'
+    | '/passageiro/notificacoes'
+    | '/passageiro/perfil'
+    | '/passageiro/pontos'
+    | '/passageiro/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/demo'
+    | '/login'
+    | '/passageiro/favoritos'
+    | '/passageiro/linhas'
+    | '/passageiro/mapa'
+    | '/passageiro/notificacoes'
+    | '/passageiro/perfil'
+    | '/passageiro/pontos'
+    | '/passageiro'
+  id:
+    | '__root__'
+    | '/'
+    | '/demo'
+    | '/login'
+    | '/passageiro'
+    | '/passageiro/favoritos'
+    | '/passageiro/linhas'
+    | '/passageiro/mapa'
+    | '/passageiro/notificacoes'
+    | '/passageiro/perfil'
+    | '/passageiro/pontos'
+    | '/passageiro/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoRoute: typeof DemoRoute
+  LoginRoute: typeof LoginRoute
+  PassageiroRoute: typeof PassageiroRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +173,108 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passageiro': {
+      id: '/passageiro'
+      path: '/passageiro'
+      fullPath: '/passageiro'
+      preLoaderRoute: typeof PassageiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passageiro/': {
+      id: '/passageiro/'
+      path: '/'
+      fullPath: '/passageiro/'
+      preLoaderRoute: typeof PassageiroIndexRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/favoritos': {
+      id: '/passageiro/favoritos'
+      path: '/favoritos'
+      fullPath: '/passageiro/favoritos'
+      preLoaderRoute: typeof PassageiroFavoritosRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/linhas': {
+      id: '/passageiro/linhas'
+      path: '/linhas'
+      fullPath: '/passageiro/linhas'
+      preLoaderRoute: typeof PassageiroLinhasRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/mapa': {
+      id: '/passageiro/mapa'
+      path: '/mapa'
+      fullPath: '/passageiro/mapa'
+      preLoaderRoute: typeof PassageiroMapaRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/notificacoes': {
+      id: '/passageiro/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/passageiro/notificacoes'
+      preLoaderRoute: typeof PassageiroNotificacoesRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/perfil': {
+      id: '/passageiro/perfil'
+      path: '/perfil'
+      fullPath: '/passageiro/perfil'
+      preLoaderRoute: typeof PassageiroPerfilRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/pontos': {
+      id: '/passageiro/pontos'
+      path: '/pontos'
+      fullPath: '/passageiro/pontos'
+      preLoaderRoute: typeof PassageiroPontosRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
   }
 }
 
+interface PassageiroRouteChildren {
+  PassageiroFavoritosRoute: typeof PassageiroFavoritosRoute
+  PassageiroLinhasRoute: typeof PassageiroLinhasRoute
+  PassageiroMapaRoute: typeof PassageiroMapaRoute
+  PassageiroNotificacoesRoute: typeof PassageiroNotificacoesRoute
+  PassageiroPerfilRoute: typeof PassageiroPerfilRoute
+  PassageiroPontosRoute: typeof PassageiroPontosRoute
+  PassageiroIndexRoute: typeof PassageiroIndexRoute
+}
+
+const PassageiroRouteChildren: PassageiroRouteChildren = {
+  PassageiroFavoritosRoute: PassageiroFavoritosRoute,
+  PassageiroLinhasRoute: PassageiroLinhasRoute,
+  PassageiroMapaRoute: PassageiroMapaRoute,
+  PassageiroNotificacoesRoute: PassageiroNotificacoesRoute,
+  PassageiroPerfilRoute: PassageiroPerfilRoute,
+  PassageiroPontosRoute: PassageiroPontosRoute,
+  PassageiroIndexRoute: PassageiroIndexRoute,
+}
+
+const PassageiroRouteWithChildren = PassageiroRoute._addFileChildren(
+  PassageiroRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoRoute: DemoRoute,
+  LoginRoute: LoginRoute,
+  PassageiroRoute: PassageiroRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
