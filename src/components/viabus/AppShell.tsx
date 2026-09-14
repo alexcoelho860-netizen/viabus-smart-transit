@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, type LinkProps } from "@tanstack/react-router";
 import {
   AlertTriangle,
   BarChart3,
@@ -38,11 +38,12 @@ import { LogoViaBus, SeloAtualizacao } from "@/components/viabus/ui-bits";
 import type { UserRole } from "@/types/viabus";
 
 interface ItemNav {
-  to: string;
+  to: LinkProps["to"];
   rotulo: string;
   icone: LucideIcon;
   exato?: boolean;
 }
+
 
 const NAV: Record<UserRole, ItemNav[]> = {
   passageiro: [
