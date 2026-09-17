@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, type LinkProps } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -8,21 +8,39 @@ import {
   Check,
   ClipboardList,
   Cog,
+  FileClock,
   Heart,
   History,
+  Image as ImageIcon,
   LayoutDashboard,
   LogOut,
   Map,
   MapPin,
+  Megaphone,
   MessageSquare,
+  Moon,
+  PlayCircle,
   Route as RouteIcon,
   Search,
+  Shield,
+  Sun,
   Users,
   UserSquare2,
+  WifiOff,
   type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +53,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useViaBus } from "@/store/viabus-store";
 import { LogoViaBus, SeloAtualizacao } from "@/components/viabus/ui-bits";
+import { BuscaGlobal } from "@/components/viabus/BuscaGlobal";
 import type { UserRole } from "@/types/viabus";
 
 interface ItemNav {
@@ -44,37 +63,49 @@ interface ItemNav {
   exato?: boolean;
 }
 
-
 const NAV: Record<UserRole, ItemNav[]> = {
   passageiro: [
     { to: "/passageiro", rotulo: "Início", icone: LayoutDashboard, exato: true },
     { to: "/passageiro/mapa", rotulo: "Mapa", icone: Map },
-    { to: "/passageiro/linhas", rotulo: "Linhas", icone: RouteIcon },
+    { to: "/passageiro/linhas", rotulo: "Rotas", icone: RouteIcon },
     { to: "/passageiro/pontos", rotulo: "Pontos", icone: MapPin },
     { to: "/passageiro/favoritos", rotulo: "Favoritos", icone: Heart },
+    { to: "/passageiro/historico", rotulo: "Histórico", icone: History },
+    { to: "/passageiro/problema", rotulo: "Informar problema", icone: AlertTriangle },
     { to: "/passageiro/notificacoes", rotulo: "Notificações", icone: Bell },
     { to: "/passageiro/perfil", rotulo: "Perfil", icone: UserSquare2 },
   ],
   motorista: [
     { to: "/motorista", rotulo: "Painel", icone: LayoutDashboard, exato: true },
+    { to: "/motorista/operacao", rotulo: "Operação", icone: PlayCircle },
     { to: "/motorista/ocorrencia", rotulo: "Ocorrência", icone: AlertTriangle },
     { to: "/motorista/rota", rotulo: "Rota", icone: RouteIcon },
     { to: "/motorista/comunicacao", rotulo: "Fiscal", icone: MessageSquare },
     { to: "/motorista/historico", rotulo: "Histórico", icone: History },
+    { to: "/motorista/perfil", rotulo: "Perfil", icone: UserSquare2 },
   ],
   fiscal: [
     { to: "/fiscal", rotulo: "Central", icone: LayoutDashboard, exato: true },
     { to: "/fiscal/mapa", rotulo: "Mapa", icone: Map },
     { to: "/fiscal/ocorrencias", rotulo: "Ocorrências", icone: AlertTriangle },
     { to: "/fiscal/comunicacao", rotulo: "Comunicação", icone: MessageSquare },
+    { to: "/fiscal/veiculos", rotulo: "Veículos", icone: Bus },
+    { to: "/fiscal/motoristas", rotulo: "Motoristas", icone: UserSquare2 },
+    { to: "/fiscal/historico", rotulo: "Histórico", icone: History },
+    { to: "/fiscal/perfil", rotulo: "Perfil", icone: Shield },
   ],
   admin: [
     { to: "/admin", rotulo: "Dashboard", icone: LayoutDashboard, exato: true },
-    { to: "/admin/linhas", rotulo: "Linhas", icone: RouteIcon },
-    { to: "/admin/veiculos", rotulo: "Veículos", icone: Bus },
+    { to: "/admin/usuarios", rotulo: "Usuários", icone: Users },
     { to: "/admin/motoristas", rotulo: "Motoristas", icone: UserSquare2 },
-    { to: "/admin/passageiros", rotulo: "Passageiros", icone: Users },
+    { to: "/admin/fiscais", rotulo: "Fiscais", icone: Shield },
+    { to: "/admin/veiculos", rotulo: "Veículos", icone: Bus },
+    { to: "/admin/rotas", rotulo: "Rotas", icone: RouteIcon },
+    { to: "/admin/ocorrencias", rotulo: "Ocorrências", icone: AlertTriangle },
+    { to: "/admin/banners", rotulo: "Banners", icone: ImageIcon },
+    { to: "/admin/notificacoes", rotulo: "Notificações", icone: Megaphone },
     { to: "/admin/relatorios", rotulo: "Relatórios", icone: BarChart3 },
+    { to: "/admin/auditoria", rotulo: "Auditoria", icone: FileClock },
     { to: "/admin/configuracoes", rotulo: "Configurações", icone: Cog },
   ],
 };
@@ -87,9 +118,20 @@ const TITULO_PAPEL: Record<UserRole, string> = {
 };
 
 export function AppShell({ role, children }: { role: UserRole; children: ReactNode }) {
-  const { perfil, entrarComo, sair, notificacoes, naoLidas, marcarTodasLidas } = useViaBus();
+  const {
+    perfil,
+    entrarComo,
+    sair,
+    notificacoes,
+    naoLidas,
+    marcarTodasLidas,
+    tema,
+    definirTema,
+    online,
+  } = useViaBus();
   const navigate = useNavigate();
-  const [busca, setBusca] = useState("");
+  const [buscaAberta, setBuscaAberta] = useState(false);
+  const [confirmarSaida, setConfirmarSaida] = useState(false);
 
   // Acesso direto pela URL na demonstração: entra automaticamente no perfil da área.
   useEffect(() => {
@@ -97,10 +139,17 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
   }, [perfil, role, entrarComo]);
 
   const itens = NAV[role];
-  const itensMobile = itens.slice(0, 5);
+  const itensMobile = useMemo(() => itens.slice(0, 5), [itens]);
 
   return (
     <div className="min-h-screen bg-background">
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+      >
+        Ir para o conteúdo
+      </a>
+
       {/* Sidebar (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
         <div className="px-5 py-6">
@@ -117,13 +166,13 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
           </p>
         </div>
         <ScrollArea className="flex-1 px-3">
-          <nav className="space-y-1 pb-6">
+          <nav className="space-y-1 pb-6" aria-label="Navegação principal">
             {itens.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.exato }}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-all hover:bg-white/8 hover:text-white data-[status=active]:bg-primary data-[status=active]:text-primary-foreground data-[status=active]:shadow-soft"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-all hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light data-[status=active]:bg-primary data-[status=active]:text-primary-foreground data-[status=active]:shadow-soft"
               >
                 <item.icone className="size-[18px]" />
                 {item.rotulo}
@@ -132,14 +181,17 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
           </nav>
         </ScrollArea>
         <div className="border-t border-white/10 p-3">
-          <button
-            onClick={() => {
-              sair();
-              navigate({ to: "/demo" });
-            }}
+          <Link
+            to="/demo"
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/8 hover:text-white"
           >
-            <LogOut className="size-[18px]" /> Trocar de perfil
+            <ClipboardList className="size-[18px]" /> Trocar de perfil
+          </Link>
+          <button
+            onClick={() => setConfirmarSaida(true)}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/8 hover:text-white"
+          >
+            <LogOut className="size-[18px]" /> Sair da conta
           </button>
         </div>
       </aside>
@@ -151,17 +203,31 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
             <div className="lg:hidden">
               <LogoViaBus compacto />
             </div>
-            <div className="relative hidden max-w-sm flex-1 sm:block">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                placeholder="Buscar linha, veículo ou parada"
-                className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none transition-colors focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
-              />
-            </div>
+            <button
+              onClick={() => setBuscaAberta(true)}
+              className="relative hidden h-10 max-w-sm flex-1 items-center gap-2 rounded-xl border border-border bg-background pl-9 pr-3 text-left text-sm text-muted-foreground transition-colors hover:border-primary/30 sm:flex"
+            >
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+              Buscar rota, veículo, motorista ou protocolo
+            </button>
             <div className="ml-auto flex items-center gap-2">
+              {!online && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-semibold text-warning-foreground">
+                  <WifiOff className="size-3.5" /> Sem conexão
+                </span>
+              )}
               <SeloAtualizacao className="hidden sm:inline-flex" />
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl"
+                aria-label="Alternar tema"
+                onClick={() => definirTema(tema === "escuro" ? "claro" : "escuro")}
+              >
+                {tema === "escuro" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+              </Button>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative rounded-xl">
@@ -171,7 +237,9 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
                         {naoLidas}
                       </span>
                     )}
-                    <span className="sr-only">Notificações</span>
+                    <span className="sr-only">
+                      {naoLidas > 0 ? `${naoLidas} novas notificações` : "Notificações"}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80">
@@ -181,12 +249,16 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
                       onClick={marcarTodasLidas}
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary"
                     >
-                      <Check className="size-3.5" /> Marcar lidas
+                      <Check className="size-3.5" /> Marcar todas como lidas
                     </button>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {notificacoes.slice(0, 5).map((n) => (
-                    <DropdownMenuItem key={n.id} className="flex-col items-start gap-0.5 py-2.5">
+                    <DropdownMenuItem
+                      key={n.id}
+                      className="flex-col items-start gap-0.5 py-2.5"
+                      onSelect={() => marcarTodasLidas()}
+                    >
                       <span className="flex w-full items-center gap-2 text-sm font-semibold">
                         {!n.lida && <span className="size-1.5 rounded-full bg-primary" />}
                         {n.titulo}
@@ -195,6 +267,11 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
                       <span className="text-[11px] text-muted-foreground/80">{n.tempo}</span>
                     </DropdownMenuItem>
                   ))}
+                  {notificacoes.length === 0 && (
+                    <p className="px-2 py-4 text-center text-sm text-muted-foreground">
+                      Nenhuma notificação por enquanto.
+                    </p>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -222,12 +299,12 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
                       <ClipboardList className="size-4" /> Trocar de perfil
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      sair();
-                      navigate({ to: "/" });
-                    }}
-                  >
+                  <DropdownMenuItem asChild>
+                    <Link to="/ajuda">
+                      <MessageSquare className="size-4" /> Ajuda
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setConfirmarSaida(true)}>
                     <LogOut className="size-4" /> Sair
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -236,11 +313,16 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-6 sm:px-6 lg:pb-10">{children}</main>
+        <main id="conteudo" className="mx-auto w-full max-w-7xl px-4 pb-28 pt-6 sm:px-6 lg:pb-10">
+          {children}
+        </main>
       </div>
 
       {/* Navegação inferior (mobile) */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/95 backdrop-blur-md lg:hidden">
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/95 backdrop-blur-md lg:hidden"
+        aria-label="Navegação rápida"
+      >
         <div className="grid grid-cols-5">
           {itensMobile.map((item) => (
             <Link
@@ -255,6 +337,30 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
           ))}
         </div>
       </nav>
+
+      <BuscaGlobal aberta={buscaAberta} aoFechar={() => setBuscaAberta(false)} />
+
+      <AlertDialog open={confirmarSaida} onOpenChange={setConfirmarSaida}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair da conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você voltará para a página inicial e precisará entrar novamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                sair();
+                navigate({ to: "/" });
+              }}
+            >
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

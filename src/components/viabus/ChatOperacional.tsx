@@ -1,30 +1,50 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { RESPOSTAS_RAPIDAS_FISCAL, RESPOSTAS_RAPIDAS_MOTORISTA } from "@/data/mock";
+import { MOTORISTAS, RESPOSTAS_RAPIDAS_FISCAL, RESPOSTAS_RAPIDAS_MOTORISTA } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useViaBus } from "@/store/viabus-store";
 
-export function ChatOperacional({ papel }: { papel: "motorista" | "fiscal" }) {
-  const { mensagens, enviarMensagem } = useViaBus();
+export function ChatOperacional({
+  papel,
+  motoristaId = "mot-01",
+}: {
+  papel: "motorista" | "fiscal";
+  motoristaId?: string;
+}) {
+  const { mensagens, enviarMensagem, marcarConversaLida, fiscais } = useViaBus();
   const [texto, setTexto] = useState("");
   const fim = useRef<HTMLDivElement>(null);
 
-  const interlocutor = papel === "motorista" ? "Carla Nogueira" : "João da Silva";
-  const funcao = papel === "motorista" ? "Fiscal de operações" : "Motorista · Veículo 4821";
+  const motorista = MOTORISTAS.find((m) => m.id === motoristaId);
+  const fiscal = fiscais[0];
+  const interlocutor = papel === "motorista" ? fiscal.nome : (motorista?.nome ?? "Motorista");
+  const funcao =
+    papel === "motorista"
+      ? `Fiscal de operações · ${fiscal.regiao}`
+      : `Motorista · Veículo ${motorista?.veiculoCodigo ?? "—"}`;
   const rapidas = papel === "motorista" ? RESPOSTAS_RAPIDAS_MOTORISTA : RESPOSTAS_RAPIDAS_FISCAL;
+
+  const conversa = useMemo(
+    () => mensagens.filter((m) => m.motoristaId === motoristaId),
+    [mensagens, motoristaId],
+  );
 
   useEffect(() => {
     fim.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensagens]);
+  }, [conversa.length]);
+
+  useEffect(() => {
+    marcarConversaLida(motoristaId);
+  }, [marcarConversaLida, motoristaId]);
 
   function enviar(valor: string) {
     const limpo = valor.trim();
     if (!limpo) return;
-    enviarMensagem(papel, limpo);
+    enviarMensagem(papel, limpo, motoristaId);
     setTexto("");
   }
 
@@ -41,12 +61,17 @@ export function ChatOperacional({ papel }: { papel: "motorista" | "fiscal" }) {
         </span>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-foreground">{interlocutor}</p>
-          <p className="text-xs text-success-foreground">Online · {funcao}</p>
+          <p className="truncate text-xs text-success-foreground">Online · {funcao}</p>
         </div>
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto bg-muted/40 p-4">
-        {mensagens.map((m) => {
+        {conversa.length === 0 && (
+          <p className="py-10 text-center text-sm text-muted-foreground">
+            Nenhuma mensagem nesta conversa ainda. Use uma mensagem rápida para começar.
+          </p>
+        )}
+        {conversa.map((m) => {
           const meu = m.papel === papel;
           return (
             <div key={m.id} className={cn("flex", meu ? "justify-end" : "justify-start")}>
@@ -93,6 +118,7 @@ export function ChatOperacional({ papel }: { papel: "motorista" | "fiscal" }) {
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Escreva uma mensagem..."
+            aria-label="Mensagem"
             className="h-11 rounded-xl"
           />
           <Button type="submit" size="icon" className="size-11 shrink-0 rounded-xl">
