@@ -3,24 +3,39 @@ import { AlertTriangle, Bus, MapPin, TrafficCone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PARADAS, ROTULO_TIPO } from "@/data/mock";
+import { MOTORISTAS, PARADAS, ROTULO_TIPO } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useViaBus } from "@/store/viabus-store";
-import { BadgeGravidade, BadgeLotacao, SeloAtualizacao } from "@/components/viabus/ui-bits";
+import {
+  BadgeGravidade,
+  BadgeLotacao,
+  SeloAtualizacao,
+  SeloDemo,
+} from "@/components/viabus/ui-bits";
 
 type Camada = "onibus" | "paradas" | "transito" | "ocorrencias";
+type Situacao = "todos" | "normal" | "atencao" | "atrasado" | "ocorrencia";
 
 const CAMADAS: { valor: Camada; rotulo: string; cor: string }[] = [
   { valor: "onibus", rotulo: "Ônibus", cor: "bg-primary" },
-  { valor: "paradas", rotulo: "Paradas", cor: "bg-brand-ink" },
+  { valor: "paradas", rotulo: "Pontos", cor: "bg-brand-ink" },
   { valor: "transito", rotulo: "Trânsito", cor: "bg-warning" },
   { valor: "ocorrencias", rotulo: "Ocorrências", cor: "bg-danger" },
 ];
 
+const SITUACOES: { valor: Situacao; rotulo: string }[] = [
+  { valor: "todos", rotulo: "Todos" },
+  { valor: "normal", rotulo: "Normal" },
+  { valor: "atencao", rotulo: "Atenção" },
+  { valor: "atrasado", rotulo: "Atrasado" },
+  { valor: "ocorrencia", rotulo: "Com ocorrência" },
+];
+
+/** Pontos de trânsito simulados sobre vias reais de Curitiba. */
 const PONTOS_TRANSITO = [
-  { id: "tr-1", x: 62, y: 48, nivel: "Lento", via: "Av. Brasil" },
-  { id: "tr-2", x: 28, y: 34, nivel: "Parado", via: "Centro histórico" },
-  { id: "tr-3", x: 50, y: 82, nivel: "Lento", via: "Av. dos Estudantes" },
+  { id: "tr-1", x: 62, y: 48, nivel: "Lento", via: "Av. Sete de Setembro — Rebouças" },
+  { id: "tr-2", x: 28, y: 34, nivel: "Parado", via: "Centro — Praça Rui Barbosa" },
+  { id: "tr-3", x: 50, y: 82, nivel: "Lento", via: "Av. Winston Churchill — Capão Raso" },
 ];
 
 interface Selecionado {
@@ -35,14 +50,28 @@ export function MapaOperacional({
   altura?: string;
   compacto?: boolean;
 }) {
-  const { veiculos, ocorrencias } = useViaBus();
+  const { veiculos, ocorrencias, segundosDesdeAtualizacao } = useViaBus();
   const [ativas, setAtivas] = useState<Camada[]>(["onibus", "paradas", "transito", "ocorrencias"]);
+  const [situacao, setSituacao] = useState<Situacao>("todos");
   const [selecionado, setSelecionado] = useState<Selecionado | null>(null);
 
   const ocorrenciasVisiveis = useMemo(
     () => ocorrencias.filter((o) => o.status !== "encerrada"),
     [ocorrencias],
   );
+
+  const veiculosVisiveis = useMemo(() => {
+    const comOcorrencia = new Set(ocorrenciasVisiveis.map((o) => o.veiculoCodigo));
+    return veiculos
+      .filter((v) => v.status === "em_rota")
+      .filter((v) => {
+        if (situacao === "todos") return true;
+        if (situacao === "ocorrencia") return comOcorrencia.has(v.codigo);
+        if (situacao === "atrasado") return v.atrasoMin >= 10;
+        if (situacao === "atencao") return v.atrasoMin >= 5 && v.atrasoMin < 10;
+        return v.atrasoMin < 5;
+      });
+  }, [ocorrenciasVisiveis, situacao, veiculos]);
 
   function alternar(camada: Camada) {
     setAtivas((atual) =>
@@ -60,6 +89,7 @@ export function MapaOperacional({
               <button
                 key={c.valor}
                 onClick={() => alternar(c.valor)}
+                aria-pressed={ativo}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
                   ativo
@@ -76,11 +106,28 @@ export function MapaOperacional({
         <SeloAtualizacao />
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/70 bg-card px-4 py-2.5">
+        <span className="text-xs font-semibold text-muted-foreground">Situação:</span>
+        {SITUACOES.map((s) => (
+          <button
+            key={s.valor}
+            onClick={() => setSituacao(s.valor)}
+            aria-pressed={situacao === s.valor}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              situacao === s.valor
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground hover:bg-muted",
+            )}
+          >
+            {s.rotulo}
+          </button>
+        ))}
+        <SeloDemo texto="Localização simulada" className="ml-auto" />
+      </div>
+
       <div
-        className={cn(
-          "relative w-full overflow-hidden bg-[#eef2f7]",
-          altura,
-        )}
+        className={cn("relative w-full overflow-hidden bg-muted", altura)}
         style={{
           backgroundImage:
             "linear-gradient(0deg, rgba(148,163,184,.25) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.25) 1px, transparent 1px)",
@@ -88,14 +135,14 @@ export function MapaOperacional({
         }}
         onClick={() => setSelecionado(null)}
       >
-        {/* Vias principais */}
+        {/* Vias principais (representação esquemática) */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-0 top-[38%] h-3 w-full -rotate-3 rounded-full bg-white/90" />
-          <div className="absolute left-[30%] top-0 h-full w-3 rotate-6 rounded-full bg-white/90" />
-          <div className="absolute left-0 top-[70%] h-2.5 w-full rotate-2 rounded-full bg-white/80" />
-          <div className="absolute left-[72%] top-0 h-full w-2.5 -rotate-3 rounded-full bg-white/80" />
-          <div className="absolute left-[6%] top-[8%] size-28 rounded-2xl bg-white/55" />
-          <div className="absolute right-[10%] bottom-[12%] size-32 rounded-2xl bg-white/55" />
+          <div className="absolute left-0 top-[38%] h-3 w-full -rotate-3 rounded-full bg-card/90" />
+          <div className="absolute left-[30%] top-0 h-full w-3 rotate-6 rounded-full bg-card/90" />
+          <div className="absolute left-0 top-[70%] h-2.5 w-full rotate-2 rounded-full bg-card/80" />
+          <div className="absolute left-[72%] top-0 h-full w-2.5 -rotate-3 rounded-full bg-card/80" />
+          <div className="absolute left-[6%] top-[8%] size-28 rounded-2xl bg-card/55" />
+          <div className="absolute bottom-[12%] right-[10%] size-32 rounded-2xl bg-card/55" />
           <div className="absolute left-[42%] top-[14%] size-24 rounded-2xl bg-success/15" />
         </div>
 
@@ -107,7 +154,7 @@ export function MapaOperacional({
                 e.stopPropagation();
                 setSelecionado({
                   titulo: `Trânsito ${t.nivel.toLowerCase()}`,
-                  linhas: [t.via, "Monitoramento em tempo real"],
+                  linhas: [t.via, "Monitoramento simulado para demonstração"],
                 });
               }}
               className="absolute -translate-x-1/2 -translate-y-1/2"
@@ -128,33 +175,38 @@ export function MapaOperacional({
                 e.stopPropagation();
                 setSelecionado({
                   titulo: p.nome,
-                  linhas: [p.endereco, `Linhas: ${p.linhas.join(", ")}`],
+                  linhas: [
+                    `${p.endereco} · ${p.bairro}`,
+                    `Rotas demonstrativas: ${p.linhas.join(", ")}`,
+                    p.abrigo ? "Ponto com abrigo" : "Ponto sem abrigo",
+                  ],
                 });
               }}
               className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${p.x}%`, top: `${p.y}%` }}
-              aria-label={`Parada ${p.nome}`}
+              aria-label={`Ponto ${p.nome}`}
             >
-              <span className="grid size-6 place-items-center rounded-full bg-brand-ink text-white shadow-soft ring-2 ring-white">
+              <span className="grid size-6 place-items-center rounded-full bg-brand-ink text-white shadow-soft ring-2 ring-card">
                 <MapPin className="size-3.5" />
               </span>
             </button>
           ))}
 
         {ativas.includes("onibus") &&
-          veiculos
-            .filter((v) => v.status === "em_rota")
-            .map((v) => (
+          veiculosVisiveis.map((v) => {
+            const motorista = MOTORISTAS.find((m) => m.id === v.motoristaId);
+            return (
               <button
                 key={v.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelecionado({
-                    titulo: `Veículo ${v.codigo} — Linha ${v.linhaCodigo}`,
+                    titulo: `Veículo ${v.codigo} — ${v.linhaCodigo}`,
                     linhas: [
-                      `${v.velocidadeKmh} km/h · atraso de ${v.atrasoMin} min`,
-                      `Lotação: ${v.lotacao}`,
-                      v.acessivel ? "Acessível para cadeirantes" : "Sem elevador",
+                      `Motorista: ${motorista?.nome ?? "—"}`,
+                      `Rota demonstrativa ${v.linhaCodigo} · ${v.velocidadeKmh} km/h`,
+                      `Atraso de ${v.atrasoMin} min · lotação ${v.lotacao}`,
+                      `Última atualização: há ${segundosDesdeAtualizacao}s (simulada)`,
                     ],
                   });
                 }}
@@ -175,7 +227,7 @@ export function MapaOperacional({
                   />
                   <span
                     className={cn(
-                      "relative grid size-8 place-items-center rounded-full text-white shadow-lift ring-2 ring-white",
+                      "relative grid size-8 place-items-center rounded-full text-white shadow-lift ring-2 ring-card",
                       v.lotacao === "alta"
                         ? "bg-danger"
                         : v.lotacao === "media"
@@ -186,11 +238,12 @@ export function MapaOperacional({
                     <Bus className="size-4" />
                   </span>
                 </span>
-                <span className="mt-1 block rounded-md bg-white/95 px-1.5 text-[10px] font-bold text-brand-ink shadow-soft">
+                <span className="mt-1 block rounded-md bg-card/95 px-1.5 text-[10px] font-bold text-foreground shadow-soft">
                   {v.codigo}
                 </span>
               </button>
-            ))}
+            );
+          })}
 
         {ativas.includes("ocorrencias") &&
           ocorrenciasVisiveis.map((o) => (
@@ -200,14 +253,14 @@ export function MapaOperacional({
                 e.stopPropagation();
                 setSelecionado({
                   titulo: `${ROTULO_TIPO[o.tipo]} · ${o.protocolo}`,
-                  linhas: [o.local, o.descricao],
+                  linhas: [o.local, o.descricao, `Veículo ${o.veiculoCodigo} · ${o.motorista}`],
                 });
               }}
               className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${o.x}%`, top: `${o.y}%` }}
               aria-label={`Ocorrência ${o.protocolo}`}
             >
-              <span className="grid size-8 place-items-center rounded-lg bg-danger text-danger-foreground shadow-lift ring-2 ring-white">
+              <span className="grid size-8 place-items-center rounded-lg bg-danger text-danger-foreground shadow-lift ring-2 ring-card">
                 <AlertTriangle className="size-4" />
               </span>
             </button>
@@ -246,6 +299,7 @@ export function MapaOperacional({
             <AlertTriangle className="size-3.5 text-danger" /> Ocorrência ativa
           </span>
           <BadgeGravidade gravidade="critica" />
+          <span className="ml-auto">Localização simulada para demonstração.</span>
         </div>
       )}
     </Card>
