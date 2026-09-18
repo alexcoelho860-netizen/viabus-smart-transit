@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PassageiroRouteImport } from './routes/passageiro'
 import { Route as PassageiroIndexRouteImport } from './routes/passageiro.index'
 import { Route as PassageiroFavoritosRouteImport } from './routes/passageiro.favoritos'
@@ -34,6 +35,11 @@ const DemoRoute = DemoRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaRoute = MotoristaRouteImport.update({
+  id: '/motorista',
+  path: '/motorista',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PassageiroRoute = PassageiroRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/motorista': typeof MotoristaRoute
   '/passageiro': typeof PassageiroRouteWithChildren
   '/passageiro/favoritos': typeof PassageiroFavoritosRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/motorista': typeof MotoristaRoute
   '/passageiro/favoritos': typeof PassageiroFavoritosRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/motorista': typeof MotoristaRoute
   '/passageiro': typeof PassageiroRouteWithChildren
   '/passageiro/favoritos': typeof PassageiroFavoritosRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/'
     | '/demo'
     | '/login'
+    | '/motorista'
     | '/passageiro'
     | '/passageiro/favoritos'
     | '/passageiro/linhas'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/'
     | '/demo'
     | '/login'
+    | '/motorista'
     | '/passageiro/favoritos'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/'
     | '/demo'
     | '/login'
+    | '/motorista'
     | '/passageiro'
     | '/passageiro/favoritos'
     | '/passageiro/linhas'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DemoRoute: typeof DemoRoute
   LoginRoute: typeof LoginRoute
+  MotoristaRoute: typeof MotoristaRoute
   PassageiroRoute: typeof PassageiroRouteWithChildren
 }
 
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista': {
+      id: '/motorista'
+      path: '/motorista'
+      fullPath: '/motorista'
+      preLoaderRoute: typeof MotoristaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/passageiro': {
@@ -274,6 +294,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemoRoute: DemoRoute,
   LoginRoute: LoginRoute,
+  MotoristaRoute: MotoristaRoute,
   PassageiroRoute: PassageiroRouteWithChildren,
 }
 export const routeTree = rootRouteImport
