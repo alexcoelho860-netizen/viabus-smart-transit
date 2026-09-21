@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as LoginRouteImport } from './routes/login'
@@ -61,6 +62,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -272,6 +278,7 @@ const PassageiroProblemaRoute = PassageiroProblemaRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/ajuda': typeof AjudaRoute
   '/demo': typeof DemoRoute
   '/fiscal': typeof FiscalRouteWithChildren
   '/login': typeof LoginRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/ajuda': typeof AjudaRoute
   '/demo': typeof DemoRoute
   '/fiscal': typeof FiscalRouteWithChildren
   '/login': typeof LoginRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/ajuda'
     | '/demo'
     | '/fiscal'
     | '/login'
@@ -450,6 +460,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ajuda'
     | '/demo'
     | '/login'
     | '/admin/auditoria'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/ajuda'
     | '/demo'
     | '/fiscal'
     | '/login'
@@ -538,6 +550,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AjudaRoute: typeof AjudaRoute
   DemoRoute: typeof DemoRoute
   FiscalRoute: typeof FiscalRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -559,6 +572,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -963,6 +983,7 @@ const PassageiroRouteWithChildren = PassageiroRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AjudaRoute: AjudaRoute,
   DemoRoute: DemoRoute,
   FiscalRoute: FiscalRouteWithChildren,
   LoginRoute: LoginRoute,
