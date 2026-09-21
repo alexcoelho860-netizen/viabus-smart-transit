@@ -10,26 +10,83 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AjudaRouteImport } from './routes/ajuda'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PassageiroRouteImport } from './routes/passageiro'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as SuporteRouteImport } from './routes/suporte'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as AdminBannersRouteImport } from './routes/admin.banners'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminFiscaisRouteImport } from './routes/admin.fiscais'
+import { Route as AdminMotoristasRouteImport } from './routes/admin.motoristas'
+import { Route as AdminNotificacoesRouteImport } from './routes/admin.notificacoes'
+import { Route as AdminOcorrenciasRouteImport } from './routes/admin.ocorrencias'
+import { Route as AdminRelatoriosRouteImport } from './routes/admin.relatorios'
+import { Route as AdminRotasRouteImport } from './routes/admin.rotas'
+import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as AdminVeiculosRouteImport } from './routes/admin.veiculos'
+import { Route as FiscalIndexRouteImport } from './routes/fiscal.index'
+import { Route as FiscalComunicacaoRouteImport } from './routes/fiscal.comunicacao'
+import { Route as FiscalHistoricoRouteImport } from './routes/fiscal.historico'
+import { Route as FiscalMapaRouteImport } from './routes/fiscal.mapa'
+import { Route as FiscalMotoristasRouteImport } from './routes/fiscal.motoristas'
+import { Route as FiscalOcorrenciasRouteImport } from './routes/fiscal.ocorrencias'
+import { Route as FiscalPerfilRouteImport } from './routes/fiscal.perfil'
+import { Route as FiscalVeiculosRouteImport } from './routes/fiscal.veiculos'
+import { Route as MotoristaIndexRouteImport } from './routes/motorista.index'
+import { Route as MotoristaComunicacaoRouteImport } from './routes/motorista.comunicacao'
+import { Route as MotoristaHistoricoRouteImport } from './routes/motorista.historico'
+import { Route as MotoristaOcorrenciaRouteImport } from './routes/motorista.ocorrencia'
+import { Route as MotoristaOperacaoRouteImport } from './routes/motorista.operacao'
+import { Route as MotoristaPerfilRouteImport } from './routes/motorista.perfil'
+import { Route as MotoristaRotaRouteImport } from './routes/motorista.rota'
 import { Route as PassageiroIndexRouteImport } from './routes/passageiro.index'
 import { Route as PassageiroFavoritosRouteImport } from './routes/passageiro.favoritos'
+import { Route as PassageiroHistoricoRouteImport } from './routes/passageiro.historico'
 import { Route as PassageiroLinhasRouteImport } from './routes/passageiro.linhas'
 import { Route as PassageiroMapaRouteImport } from './routes/passageiro.mapa'
 import { Route as PassageiroNotificacoesRouteImport } from './routes/passageiro.notificacoes'
 import { Route as PassageiroPerfilRouteImport } from './routes/passageiro.perfil'
 import { Route as PassageiroPontosRouteImport } from './routes/passageiro.pontos'
+import { Route as PassageiroProblemaRouteImport } from './routes/passageiro.problema'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FiscalRoute = FiscalRouteImport.update({
+  id: '/fiscal',
+  path: '/fiscal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -47,6 +104,161 @@ const PassageiroRoute = PassageiroRouteImport.update({
   path: '/passageiro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBannersRoute = AdminBannersRouteImport.update({
+  id: '/banners',
+  path: '/banners',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFiscaisRoute = AdminFiscaisRouteImport.update({
+  id: '/fiscais',
+  path: '/fiscais',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
+  id: '/motoristas',
+  path: '/motoristas',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNotificacoesRoute = AdminNotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOcorrenciasRoute = AdminOcorrenciasRouteImport.update({
+  id: '/ocorrencias',
+  path: '/ocorrencias',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRelatoriosRoute = AdminRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRotasRoute = AdminRotasRouteImport.update({
+  id: '/rotas',
+  path: '/rotas',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVeiculosRoute = AdminVeiculosRouteImport.update({
+  id: '/veiculos',
+  path: '/veiculos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const FiscalIndexRoute = FiscalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalComunicacaoRoute = FiscalComunicacaoRouteImport.update({
+  id: '/comunicacao',
+  path: '/comunicacao',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalHistoricoRoute = FiscalHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalMapaRoute = FiscalMapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalMotoristasRoute = FiscalMotoristasRouteImport.update({
+  id: '/motoristas',
+  path: '/motoristas',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalOcorrenciasRoute = FiscalOcorrenciasRouteImport.update({
+  id: '/ocorrencias',
+  path: '/ocorrencias',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalPerfilRoute = FiscalPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const FiscalVeiculosRoute = FiscalVeiculosRouteImport.update({
+  id: '/veiculos',
+  path: '/veiculos',
+  getParentRoute: () => FiscalRoute,
+} as any)
+const MotoristaIndexRoute = MotoristaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MotoristaRoute,
+} as any)
+const MotoristaComunicacaoRoute = MotoristaComunicacaoRouteImport.update({
+  id: '/comunicacao',
+  path: '/comunicacao',
+  getParentRoute: () => MotoristaRoute,
+} as any)
+const MotoristaHistoricoRoute = MotoristaHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => MotoristaRoute,
+} as any)
+const MotoristaOcorrenciaRoute = MotoristaOcorrenciaRouteImport.update({
+  id: '/ocorrencia',
+  path: '/ocorrencia',
+  getParentRoute: () => MotoristaRoute,
+} as any)
+const MotoristaOperacaoRoute = MotoristaOperacaoRouteImport.update({
+  id: '/operacao',
+  path: '/operacao',
+  getParentRoute: () => MotoristaRoute,
+} as any)
+const MotoristaPerfilRoute = MotoristaPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => MotoristaRoute,
+} as any)
+const MotoristaRotaRoute = MotoristaRotaRouteImport.update({
+  id: '/rota',
+  path: '/rota',
+  getParentRoute: () => MotoristaRoute,
+} as any)
 const PassageiroIndexRoute = PassageiroIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,6 +267,11 @@ const PassageiroIndexRoute = PassageiroIndexRouteImport.update({
 const PassageiroFavoritosRoute = PassageiroFavoritosRouteImport.update({
   id: '/favoritos',
   path: '/favoritos',
+  getParentRoute: () => PassageiroRoute,
+} as any)
+const PassageiroHistoricoRoute = PassageiroHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => PassageiroRoute,
 } as any)
 const PassageiroLinhasRoute = PassageiroLinhasRouteImport.update({
@@ -82,99 +299,328 @@ const PassageiroPontosRoute = PassageiroPontosRouteImport.update({
   path: '/pontos',
   getParentRoute: () => PassageiroRoute,
 } as any)
+const PassageiroProblemaRoute = PassageiroProblemaRouteImport.update({
+  id: '/problema',
+  path: '/problema',
+  getParentRoute: () => PassageiroRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/ajuda': typeof AjudaRoute
+  '/cadastro': typeof CadastroRoute
   '/demo': typeof DemoRoute
+  '/fiscal': typeof FiscalRouteWithChildren
   '/login': typeof LoginRoute
-  '/motorista': typeof MotoristaRoute
+  '/motorista': typeof MotoristaRouteWithChildren
   '/passageiro': typeof PassageiroRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/suporte': typeof SuporteRoute
+  '/termos': typeof TermosRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/fiscais': typeof AdminFiscaisRoute
+  '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/notificacoes': typeof AdminNotificacoesRoute
+  '/admin/ocorrencias': typeof AdminOcorrenciasRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/rotas': typeof AdminRotasRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/admin/veiculos': typeof AdminVeiculosRoute
+  '/fiscal/comunicacao': typeof FiscalComunicacaoRoute
+  '/fiscal/historico': typeof FiscalHistoricoRoute
+  '/fiscal/mapa': typeof FiscalMapaRoute
+  '/fiscal/motoristas': typeof FiscalMotoristasRoute
+  '/fiscal/ocorrencias': typeof FiscalOcorrenciasRoute
+  '/fiscal/perfil': typeof FiscalPerfilRoute
+  '/fiscal/veiculos': typeof FiscalVeiculosRoute
+  '/motorista/comunicacao': typeof MotoristaComunicacaoRoute
+  '/motorista/historico': typeof MotoristaHistoricoRoute
+  '/motorista/ocorrencia': typeof MotoristaOcorrenciaRoute
+  '/motorista/operacao': typeof MotoristaOperacaoRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
+  '/motorista/rota': typeof MotoristaRotaRoute
   '/passageiro/favoritos': typeof PassageiroFavoritosRoute
+  '/passageiro/historico': typeof PassageiroHistoricoRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
   '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
   '/passageiro/perfil': typeof PassageiroPerfilRoute
   '/passageiro/pontos': typeof PassageiroPontosRoute
+  '/passageiro/problema': typeof PassageiroProblemaRoute
+  '/admin/': typeof AdminIndexRoute
+  '/fiscal/': typeof FiscalIndexRoute
+  '/motorista/': typeof MotoristaIndexRoute
   '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
+  '/cadastro': typeof CadastroRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
-  '/motorista': typeof MotoristaRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/suporte': typeof SuporteRoute
+  '/termos': typeof TermosRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/fiscais': typeof AdminFiscaisRoute
+  '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/notificacoes': typeof AdminNotificacoesRoute
+  '/admin/ocorrencias': typeof AdminOcorrenciasRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/rotas': typeof AdminRotasRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/admin/veiculos': typeof AdminVeiculosRoute
+  '/fiscal/comunicacao': typeof FiscalComunicacaoRoute
+  '/fiscal/historico': typeof FiscalHistoricoRoute
+  '/fiscal/mapa': typeof FiscalMapaRoute
+  '/fiscal/motoristas': typeof FiscalMotoristasRoute
+  '/fiscal/ocorrencias': typeof FiscalOcorrenciasRoute
+  '/fiscal/perfil': typeof FiscalPerfilRoute
+  '/fiscal/veiculos': typeof FiscalVeiculosRoute
+  '/motorista/comunicacao': typeof MotoristaComunicacaoRoute
+  '/motorista/historico': typeof MotoristaHistoricoRoute
+  '/motorista/ocorrencia': typeof MotoristaOcorrenciaRoute
+  '/motorista/operacao': typeof MotoristaOperacaoRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
+  '/motorista/rota': typeof MotoristaRotaRoute
   '/passageiro/favoritos': typeof PassageiroFavoritosRoute
+  '/passageiro/historico': typeof PassageiroHistoricoRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
   '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
   '/passageiro/perfil': typeof PassageiroPerfilRoute
   '/passageiro/pontos': typeof PassageiroPontosRoute
+  '/passageiro/problema': typeof PassageiroProblemaRoute
+  '/admin': typeof AdminIndexRoute
+  '/fiscal': typeof FiscalIndexRoute
+  '/motorista': typeof MotoristaIndexRoute
   '/passageiro': typeof PassageiroIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/ajuda': typeof AjudaRoute
+  '/cadastro': typeof CadastroRoute
   '/demo': typeof DemoRoute
+  '/fiscal': typeof FiscalRouteWithChildren
   '/login': typeof LoginRoute
-  '/motorista': typeof MotoristaRoute
+  '/motorista': typeof MotoristaRouteWithChildren
   '/passageiro': typeof PassageiroRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/suporte': typeof SuporteRoute
+  '/termos': typeof TermosRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/fiscais': typeof AdminFiscaisRoute
+  '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/notificacoes': typeof AdminNotificacoesRoute
+  '/admin/ocorrencias': typeof AdminOcorrenciasRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/rotas': typeof AdminRotasRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/admin/veiculos': typeof AdminVeiculosRoute
+  '/fiscal/comunicacao': typeof FiscalComunicacaoRoute
+  '/fiscal/historico': typeof FiscalHistoricoRoute
+  '/fiscal/mapa': typeof FiscalMapaRoute
+  '/fiscal/motoristas': typeof FiscalMotoristasRoute
+  '/fiscal/ocorrencias': typeof FiscalOcorrenciasRoute
+  '/fiscal/perfil': typeof FiscalPerfilRoute
+  '/fiscal/veiculos': typeof FiscalVeiculosRoute
+  '/motorista/comunicacao': typeof MotoristaComunicacaoRoute
+  '/motorista/historico': typeof MotoristaHistoricoRoute
+  '/motorista/ocorrencia': typeof MotoristaOcorrenciaRoute
+  '/motorista/operacao': typeof MotoristaOperacaoRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
+  '/motorista/rota': typeof MotoristaRotaRoute
   '/passageiro/favoritos': typeof PassageiroFavoritosRoute
+  '/passageiro/historico': typeof PassageiroHistoricoRoute
   '/passageiro/linhas': typeof PassageiroLinhasRoute
   '/passageiro/mapa': typeof PassageiroMapaRoute
   '/passageiro/notificacoes': typeof PassageiroNotificacoesRoute
   '/passageiro/perfil': typeof PassageiroPerfilRoute
   '/passageiro/pontos': typeof PassageiroPontosRoute
+  '/passageiro/problema': typeof PassageiroProblemaRoute
+  '/admin/': typeof AdminIndexRoute
+  '/fiscal/': typeof FiscalIndexRoute
+  '/motorista/': typeof MotoristaIndexRoute
   '/passageiro/': typeof PassageiroIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/ajuda'
+    | '/cadastro'
     | '/demo'
+    | '/fiscal'
     | '/login'
     | '/motorista'
     | '/passageiro'
+    | '/privacidade'
+    | '/recuperar-senha'
+    | '/suporte'
+    | '/termos'
+    | '/admin/auditoria'
+    | '/admin/banners'
+    | '/admin/configuracoes'
+    | '/admin/fiscais'
+    | '/admin/motoristas'
+    | '/admin/notificacoes'
+    | '/admin/ocorrencias'
+    | '/admin/relatorios'
+    | '/admin/rotas'
+    | '/admin/usuarios'
+    | '/admin/veiculos'
+    | '/fiscal/comunicacao'
+    | '/fiscal/historico'
+    | '/fiscal/mapa'
+    | '/fiscal/motoristas'
+    | '/fiscal/ocorrencias'
+    | '/fiscal/perfil'
+    | '/fiscal/veiculos'
+    | '/motorista/comunicacao'
+    | '/motorista/historico'
+    | '/motorista/ocorrencia'
+    | '/motorista/operacao'
+    | '/motorista/perfil'
+    | '/motorista/rota'
     | '/passageiro/favoritos'
+    | '/passageiro/historico'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
     | '/passageiro/notificacoes'
     | '/passageiro/perfil'
     | '/passageiro/pontos'
+    | '/passageiro/problema'
+    | '/admin/'
+    | '/fiscal/'
+    | '/motorista/'
     | '/passageiro/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ajuda'
+    | '/cadastro'
     | '/demo'
     | '/login'
-    | '/motorista'
+    | '/privacidade'
+    | '/recuperar-senha'
+    | '/suporte'
+    | '/termos'
+    | '/admin/auditoria'
+    | '/admin/banners'
+    | '/admin/configuracoes'
+    | '/admin/fiscais'
+    | '/admin/motoristas'
+    | '/admin/notificacoes'
+    | '/admin/ocorrencias'
+    | '/admin/relatorios'
+    | '/admin/rotas'
+    | '/admin/usuarios'
+    | '/admin/veiculos'
+    | '/fiscal/comunicacao'
+    | '/fiscal/historico'
+    | '/fiscal/mapa'
+    | '/fiscal/motoristas'
+    | '/fiscal/ocorrencias'
+    | '/fiscal/perfil'
+    | '/fiscal/veiculos'
+    | '/motorista/comunicacao'
+    | '/motorista/historico'
+    | '/motorista/ocorrencia'
+    | '/motorista/operacao'
+    | '/motorista/perfil'
+    | '/motorista/rota'
     | '/passageiro/favoritos'
+    | '/passageiro/historico'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
     | '/passageiro/notificacoes'
     | '/passageiro/perfil'
     | '/passageiro/pontos'
+    | '/passageiro/problema'
+    | '/admin'
+    | '/fiscal'
+    | '/motorista'
     | '/passageiro'
   id:
     | '__root__'
     | '/'
+    | '/admin'
+    | '/ajuda'
+    | '/cadastro'
     | '/demo'
+    | '/fiscal'
     | '/login'
     | '/motorista'
     | '/passageiro'
+    | '/privacidade'
+    | '/recuperar-senha'
+    | '/suporte'
+    | '/termos'
+    | '/admin/auditoria'
+    | '/admin/banners'
+    | '/admin/configuracoes'
+    | '/admin/fiscais'
+    | '/admin/motoristas'
+    | '/admin/notificacoes'
+    | '/admin/ocorrencias'
+    | '/admin/relatorios'
+    | '/admin/rotas'
+    | '/admin/usuarios'
+    | '/admin/veiculos'
+    | '/fiscal/comunicacao'
+    | '/fiscal/historico'
+    | '/fiscal/mapa'
+    | '/fiscal/motoristas'
+    | '/fiscal/ocorrencias'
+    | '/fiscal/perfil'
+    | '/fiscal/veiculos'
+    | '/motorista/comunicacao'
+    | '/motorista/historico'
+    | '/motorista/ocorrencia'
+    | '/motorista/operacao'
+    | '/motorista/perfil'
+    | '/motorista/rota'
     | '/passageiro/favoritos'
+    | '/passageiro/historico'
     | '/passageiro/linhas'
     | '/passageiro/mapa'
     | '/passageiro/notificacoes'
     | '/passageiro/perfil'
     | '/passageiro/pontos'
+    | '/passageiro/problema'
+    | '/admin/'
+    | '/fiscal/'
+    | '/motorista/'
     | '/passageiro/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AjudaRoute: typeof AjudaRoute
+  CadastroRoute: typeof CadastroRoute
   DemoRoute: typeof DemoRoute
+  FiscalRoute: typeof FiscalRouteWithChildren
   LoginRoute: typeof LoginRoute
-  MotoristaRoute: typeof MotoristaRoute
+  MotoristaRoute: typeof MotoristaRouteWithChildren
   PassageiroRoute: typeof PassageiroRouteWithChildren
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  SuporteRoute: typeof SuporteRoute
+  TermosRoute: typeof TermosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -186,11 +632,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo': {
       id: '/demo'
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fiscal': {
+      id: '/fiscal'
+      path: '/fiscal'
+      fullPath: '/fiscal'
+      preLoaderRoute: typeof FiscalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -214,6 +688,223 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassageiroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/auditoria': {
+      id: '/admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/admin/auditoria'
+      preLoaderRoute: typeof AdminAuditoriaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/banners': {
+      id: '/admin/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminBannersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/fiscais': {
+      id: '/admin/fiscais'
+      path: '/fiscais'
+      fullPath: '/admin/fiscais'
+      preLoaderRoute: typeof AdminFiscaisRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/motoristas': {
+      id: '/admin/motoristas'
+      path: '/motoristas'
+      fullPath: '/admin/motoristas'
+      preLoaderRoute: typeof AdminMotoristasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/notificacoes': {
+      id: '/admin/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/admin/notificacoes'
+      preLoaderRoute: typeof AdminNotificacoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/ocorrencias': {
+      id: '/admin/ocorrencias'
+      path: '/ocorrencias'
+      fullPath: '/admin/ocorrencias'
+      preLoaderRoute: typeof AdminOcorrenciasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/relatorios': {
+      id: '/admin/relatorios'
+      path: '/relatorios'
+      fullPath: '/admin/relatorios'
+      preLoaderRoute: typeof AdminRelatoriosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rotas': {
+      id: '/admin/rotas'
+      path: '/rotas'
+      fullPath: '/admin/rotas'
+      preLoaderRoute: typeof AdminRotasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/usuarios': {
+      id: '/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/veiculos': {
+      id: '/admin/veiculos'
+      path: '/veiculos'
+      fullPath: '/admin/veiculos'
+      preLoaderRoute: typeof AdminVeiculosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/fiscal/': {
+      id: '/fiscal/'
+      path: '/'
+      fullPath: '/fiscal/'
+      preLoaderRoute: typeof FiscalIndexRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/comunicacao': {
+      id: '/fiscal/comunicacao'
+      path: '/comunicacao'
+      fullPath: '/fiscal/comunicacao'
+      preLoaderRoute: typeof FiscalComunicacaoRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/historico': {
+      id: '/fiscal/historico'
+      path: '/historico'
+      fullPath: '/fiscal/historico'
+      preLoaderRoute: typeof FiscalHistoricoRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/mapa': {
+      id: '/fiscal/mapa'
+      path: '/mapa'
+      fullPath: '/fiscal/mapa'
+      preLoaderRoute: typeof FiscalMapaRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/motoristas': {
+      id: '/fiscal/motoristas'
+      path: '/motoristas'
+      fullPath: '/fiscal/motoristas'
+      preLoaderRoute: typeof FiscalMotoristasRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/ocorrencias': {
+      id: '/fiscal/ocorrencias'
+      path: '/ocorrencias'
+      fullPath: '/fiscal/ocorrencias'
+      preLoaderRoute: typeof FiscalOcorrenciasRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/perfil': {
+      id: '/fiscal/perfil'
+      path: '/perfil'
+      fullPath: '/fiscal/perfil'
+      preLoaderRoute: typeof FiscalPerfilRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/fiscal/veiculos': {
+      id: '/fiscal/veiculos'
+      path: '/veiculos'
+      fullPath: '/fiscal/veiculos'
+      preLoaderRoute: typeof FiscalVeiculosRouteImport
+      parentRoute: typeof FiscalRoute
+    }
+    '/motorista/': {
+      id: '/motorista/'
+      path: '/'
+      fullPath: '/motorista/'
+      preLoaderRoute: typeof MotoristaIndexRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
+    '/motorista/comunicacao': {
+      id: '/motorista/comunicacao'
+      path: '/comunicacao'
+      fullPath: '/motorista/comunicacao'
+      preLoaderRoute: typeof MotoristaComunicacaoRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
+    '/motorista/historico': {
+      id: '/motorista/historico'
+      path: '/historico'
+      fullPath: '/motorista/historico'
+      preLoaderRoute: typeof MotoristaHistoricoRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
+    '/motorista/ocorrencia': {
+      id: '/motorista/ocorrencia'
+      path: '/ocorrencia'
+      fullPath: '/motorista/ocorrencia'
+      preLoaderRoute: typeof MotoristaOcorrenciaRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
+    '/motorista/operacao': {
+      id: '/motorista/operacao'
+      path: '/operacao'
+      fullPath: '/motorista/operacao'
+      preLoaderRoute: typeof MotoristaOperacaoRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
+    '/motorista/perfil': {
+      id: '/motorista/perfil'
+      path: '/perfil'
+      fullPath: '/motorista/perfil'
+      preLoaderRoute: typeof MotoristaPerfilRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
+    '/motorista/rota': {
+      id: '/motorista/rota'
+      path: '/rota'
+      fullPath: '/motorista/rota'
+      preLoaderRoute: typeof MotoristaRotaRouteImport
+      parentRoute: typeof MotoristaRoute
+    }
     '/passageiro/': {
       id: '/passageiro/'
       path: '/'
@@ -226,6 +917,13 @@ declare module '@tanstack/react-router' {
       path: '/favoritos'
       fullPath: '/passageiro/favoritos'
       preLoaderRoute: typeof PassageiroFavoritosRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
+    '/passageiro/historico': {
+      id: '/passageiro/historico'
+      path: '/historico'
+      fullPath: '/passageiro/historico'
+      preLoaderRoute: typeof PassageiroHistoricoRouteImport
       parentRoute: typeof PassageiroRoute
     }
     '/passageiro/linhas': {
@@ -263,26 +961,118 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassageiroPontosRouteImport
       parentRoute: typeof PassageiroRoute
     }
+    '/passageiro/problema': {
+      id: '/passageiro/problema'
+      path: '/problema'
+      fullPath: '/passageiro/problema'
+      preLoaderRoute: typeof PassageiroProblemaRouteImport
+      parentRoute: typeof PassageiroRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAuditoriaRoute: typeof AdminAuditoriaRoute
+  AdminBannersRoute: typeof AdminBannersRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminFiscaisRoute: typeof AdminFiscaisRoute
+  AdminMotoristasRoute: typeof AdminMotoristasRoute
+  AdminNotificacoesRoute: typeof AdminNotificacoesRoute
+  AdminOcorrenciasRoute: typeof AdminOcorrenciasRoute
+  AdminRelatoriosRoute: typeof AdminRelatoriosRoute
+  AdminRotasRoute: typeof AdminRotasRoute
+  AdminUsuariosRoute: typeof AdminUsuariosRoute
+  AdminVeiculosRoute: typeof AdminVeiculosRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditoriaRoute: AdminAuditoriaRoute,
+  AdminBannersRoute: AdminBannersRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminFiscaisRoute: AdminFiscaisRoute,
+  AdminMotoristasRoute: AdminMotoristasRoute,
+  AdminNotificacoesRoute: AdminNotificacoesRoute,
+  AdminOcorrenciasRoute: AdminOcorrenciasRoute,
+  AdminRelatoriosRoute: AdminRelatoriosRoute,
+  AdminRotasRoute: AdminRotasRoute,
+  AdminUsuariosRoute: AdminUsuariosRoute,
+  AdminVeiculosRoute: AdminVeiculosRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface FiscalRouteChildren {
+  FiscalComunicacaoRoute: typeof FiscalComunicacaoRoute
+  FiscalHistoricoRoute: typeof FiscalHistoricoRoute
+  FiscalMapaRoute: typeof FiscalMapaRoute
+  FiscalMotoristasRoute: typeof FiscalMotoristasRoute
+  FiscalOcorrenciasRoute: typeof FiscalOcorrenciasRoute
+  FiscalPerfilRoute: typeof FiscalPerfilRoute
+  FiscalVeiculosRoute: typeof FiscalVeiculosRoute
+  FiscalIndexRoute: typeof FiscalIndexRoute
+}
+
+const FiscalRouteChildren: FiscalRouteChildren = {
+  FiscalComunicacaoRoute: FiscalComunicacaoRoute,
+  FiscalHistoricoRoute: FiscalHistoricoRoute,
+  FiscalMapaRoute: FiscalMapaRoute,
+  FiscalMotoristasRoute: FiscalMotoristasRoute,
+  FiscalOcorrenciasRoute: FiscalOcorrenciasRoute,
+  FiscalPerfilRoute: FiscalPerfilRoute,
+  FiscalVeiculosRoute: FiscalVeiculosRoute,
+  FiscalIndexRoute: FiscalIndexRoute,
+}
+
+const FiscalRouteWithChildren =
+  FiscalRoute._addFileChildren(FiscalRouteChildren)
+
+interface MotoristaRouteChildren {
+  MotoristaComunicacaoRoute: typeof MotoristaComunicacaoRoute
+  MotoristaHistoricoRoute: typeof MotoristaHistoricoRoute
+  MotoristaOcorrenciaRoute: typeof MotoristaOcorrenciaRoute
+  MotoristaOperacaoRoute: typeof MotoristaOperacaoRoute
+  MotoristaPerfilRoute: typeof MotoristaPerfilRoute
+  MotoristaRotaRoute: typeof MotoristaRotaRoute
+  MotoristaIndexRoute: typeof MotoristaIndexRoute
+}
+
+const MotoristaRouteChildren: MotoristaRouteChildren = {
+  MotoristaComunicacaoRoute: MotoristaComunicacaoRoute,
+  MotoristaHistoricoRoute: MotoristaHistoricoRoute,
+  MotoristaOcorrenciaRoute: MotoristaOcorrenciaRoute,
+  MotoristaOperacaoRoute: MotoristaOperacaoRoute,
+  MotoristaPerfilRoute: MotoristaPerfilRoute,
+  MotoristaRotaRoute: MotoristaRotaRoute,
+  MotoristaIndexRoute: MotoristaIndexRoute,
+}
+
+const MotoristaRouteWithChildren = MotoristaRoute._addFileChildren(
+  MotoristaRouteChildren,
+)
+
 interface PassageiroRouteChildren {
   PassageiroFavoritosRoute: typeof PassageiroFavoritosRoute
+  PassageiroHistoricoRoute: typeof PassageiroHistoricoRoute
   PassageiroLinhasRoute: typeof PassageiroLinhasRoute
   PassageiroMapaRoute: typeof PassageiroMapaRoute
   PassageiroNotificacoesRoute: typeof PassageiroNotificacoesRoute
   PassageiroPerfilRoute: typeof PassageiroPerfilRoute
   PassageiroPontosRoute: typeof PassageiroPontosRoute
+  PassageiroProblemaRoute: typeof PassageiroProblemaRoute
   PassageiroIndexRoute: typeof PassageiroIndexRoute
 }
 
 const PassageiroRouteChildren: PassageiroRouteChildren = {
   PassageiroFavoritosRoute: PassageiroFavoritosRoute,
+  PassageiroHistoricoRoute: PassageiroHistoricoRoute,
   PassageiroLinhasRoute: PassageiroLinhasRoute,
   PassageiroMapaRoute: PassageiroMapaRoute,
   PassageiroNotificacoesRoute: PassageiroNotificacoesRoute,
   PassageiroPerfilRoute: PassageiroPerfilRoute,
   PassageiroPontosRoute: PassageiroPontosRoute,
+  PassageiroProblemaRoute: PassageiroProblemaRoute,
   PassageiroIndexRoute: PassageiroIndexRoute,
 }
 
@@ -292,10 +1082,18 @@ const PassageiroRouteWithChildren = PassageiroRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AjudaRoute: AjudaRoute,
+  CadastroRoute: CadastroRoute,
   DemoRoute: DemoRoute,
+  FiscalRoute: FiscalRouteWithChildren,
   LoginRoute: LoginRoute,
-  MotoristaRoute: MotoristaRoute,
+  MotoristaRoute: MotoristaRouteWithChildren,
   PassageiroRoute: PassageiroRouteWithChildren,
+  PrivacidadeRoute: PrivacidadeRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
+  SuporteRoute: SuporteRoute,
+  TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

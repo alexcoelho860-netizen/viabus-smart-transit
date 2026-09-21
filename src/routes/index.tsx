@@ -156,11 +156,11 @@ function Landing() {
               </div>
               <div className="mt-4 flex items-center gap-3">
                 <span className="grid size-14 place-items-center rounded-2xl bg-primary text-xl font-extrabold">
-                  203
+                  RD-01
                 </span>
                 <div>
-                  <p className="font-bold">Terminal Central → Jardim das Flores</p>
-                  <p className="text-sm text-white/60">Veículo 4821 · movimento moderado</p>
+                  <p className="font-bold">Terminal do Cabral → Praça Rui Barbosa</p>
+                  <p className="text-sm text-white/60">Veículo VB-1001 · movimento moderado</p>
                 </div>
               </div>
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
@@ -176,7 +176,7 @@ function Landing() {
                 ))}
               </div>
               <div className="mt-4 space-y-2">
-                {["Praça da Matriz · 4 min", "Hospital Municipal · 9 min", "Shopping Norte · 15 min"].map(
+                {["Terminal do Cabral · 4 min", "Praça Rui Barbosa · 9 min", "Terminal do Portão · 15 min"].map(
                   (p) => (
                     <div
                       key={p}

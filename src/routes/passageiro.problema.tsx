@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { RolePage } from "@/components/viabus/RolePages";
+export const Route = createFileRoute("/passageiro/problema")({ head: () => ({ meta: [{ title: "Informar um problema — ViaBus" }, { name: "description", content: "Informar um problema na área do passageiro ViaBus." }, { property: "og:title", content: "Informar um problema — ViaBus" }, { property: "og:description", content: "Use informar um problema no protótipo ViaBus." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RolePage mode="passageiro-problema" /> });
