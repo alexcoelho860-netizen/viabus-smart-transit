@@ -30,7 +30,9 @@ function Pagina() {
   const proximo = veiculos.find((v) => v.codigo === "4821")!;
   const linha203 = LINHAS[0];
   const proximos = useMemo(() => veiculos.filter((v) => v.status === "em_rota").slice(0, 4), [veiculos]);
-  const aviso = ALERTAS[indice % ALERTAS.length];
+  const aviso = ALERTAS[indice % ALERTAS.length] ?? ALERTAS[0];
+
+  if (!aviso || !linha203) return <div className="p-8 text-center text-muted-foreground">Dados demonstrativos indisponíveis.</div>;
 
   return (
     <div className="space-y-6">

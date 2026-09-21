@@ -1,0 +1,6 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+export const Route=createFileRoute("/ajuda")({head:()=>({meta:[{title:"Ajuda — ViaBus"},{name:"description",content:"Ajuda e dúvidas frequentes do protótipo ViaBus."},{property:"og:title",content:"Ajuda — ViaBus"},{property:"og:description",content:"Encontre respostas sobre o ViaBus."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary"}]}),component:Ajuda});
+function Ajuda(){return <main className="mx-auto max-w-3xl space-y-5 px-4 py-12"><h1 className="text-3xl font-extrabold">Central de ajuda</h1>{["Como trocar de perfil?","Os veículos são reais?","Como registrar uma ocorrência?","Onde os dados ficam salvos?"].map((q,i)=><Card key={q} className="rounded-2xl p-5"><h2 className="font-bold">{q}</h2><p className="mt-2 text-sm text-muted-foreground">{i===0?"Use a opção Trocar de perfil no menu.":i===1?"Não. Rotas e veículos são demonstrativos; apenas as localidades são reais.":i===2?"Motoristas usam a tela Registrar ocorrência e recebem um protocolo.":"Nesta versão, os dados são simulados localmente e preparados para integração futura."}</p></Card>)}<Button asChild><Link to="/demo">Voltar à demonstração</Link></Button></main>}
