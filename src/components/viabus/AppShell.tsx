@@ -171,7 +171,7 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
               <Link
                 key={item.to}
                 to={item.to}
-                activeOptions={{ exact: item.exato }}
+                activeOptions={item.exato ? { exact: true } : undefined}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-all hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light data-[status=active]:bg-primary data-[status=active]:text-primary-foreground data-[status=active]:shadow-soft"
               >
                 <item.icone className="size-[18px]" />
@@ -328,7 +328,7 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
             <Link
               key={item.to}
               to={item.to}
-              activeOptions={{ exact: item.exato }}
+              activeOptions={item.exato ? { exact: true } : undefined}
               className="flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-muted-foreground transition-colors data-[status=active]:text-primary"
             >
               <item.icone className="size-5" />
