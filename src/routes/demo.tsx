@@ -48,7 +48,7 @@ const OPCOES: {
   {
     role: "motorista",
     titulo: "Motorista",
-    pessoa: "João da Silva · Veículo 4821",
+    pessoa: "João da Silva · Veículo VB-1001",
     descricao: "Painel do volante com registro rápido de ocorrência e chat com o fiscal.",
     icone: Bus,
     destino: "/motorista",

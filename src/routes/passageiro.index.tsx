@@ -16,7 +16,9 @@ export const Route = createFileRoute("/passageiro/")({
       { title: "Minhas viagens — ViaBus Passageiro" },
       { name: "description", content: "Veja o próximo ônibus, a lotação, seus favoritos e os alertas da sua região no ViaBus." },
       { property: "og:title", content: "Minhas viagens — ViaBus Passageiro" },
-      { property: "og:description", content: "Próximo ônibus da linha 203, tempo de chegada, lotação e alertas da região." },
+      { property: "og:description", content: "Próximo ônibus em rota demonstrativa, tempo de chegada, lotação e alertas da região." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Pagina,
@@ -27,12 +29,12 @@ function Pagina() {
   const [destino, setDestino] = useState("");
   const [indice, setIndice] = useState(0);
 
-  const proximo = veiculos.find((v) => v.codigo === "4821")!;
+  const proximo = veiculos.find((v) => v.codigo === "VB-1001") ?? veiculos[0];
   const linha203 = LINHAS[0];
   const proximos = useMemo(() => veiculos.filter((v) => v.status === "em_rota").slice(0, 4), [veiculos]);
   const aviso = ALERTAS[indice % ALERTAS.length] ?? ALERTAS[0];
 
-  if (!aviso || !linha203) return <div className="p-8 text-center text-muted-foreground">Dados demonstrativos indisponíveis.</div>;
+  if (!aviso || !linha203 || !proximo) return <div className="p-8 text-center text-muted-foreground">Dados demonstrativos indisponíveis.</div>;
 
   return (
     <div className="space-y-6">
@@ -74,9 +76,9 @@ function Pagina() {
         <div className="mt-3 flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Ex.: Hospital Municipal" className="h-11 rounded-xl pl-9" />
+            <Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Ex.: Praça Rui Barbosa" className="h-11 rounded-xl pl-9" />
           </div>
-          <Button className="h-11 rounded-xl px-5" onClick={() => toast.success(destino ? `Buscando rotas até ${destino}` : "Digite um destino para buscar", { description: destino ? "Melhor opção: linha 203, 4 min de espera." : undefined })}>Buscar</Button>
+          <Button className="h-11 rounded-xl px-5" onClick={() => toast.success(destino ? `Buscando rotas até ${destino}` : "Digite um destino para buscar", { description: destino ? "Melhor opção: rota demonstrativa RD-01, 4 min de espera." : undefined })}>Buscar</Button>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {PARADAS.slice(0, 4).map((p) => (

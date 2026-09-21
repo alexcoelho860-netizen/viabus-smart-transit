@@ -133,13 +133,29 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
   const [buscaAberta, setBuscaAberta] = useState(false);
   const [confirmarSaida, setConfirmarSaida] = useState(false);
 
-  // Acesso direto pela URL na demonstração: entra automaticamente no perfil da área.
+  // Acesso direto sem sessão inicia a demonstração; perfis ativos não trocam de área pela URL.
   useEffect(() => {
-    if (!perfil || perfil.role !== role) entrarComo(role);
+    if (!perfil) entrarComo(role);
   }, [perfil, role, entrarComo]);
 
   const itens = NAV[role];
   const itensMobile = useMemo(() => itens.slice(0, 5), [itens]);
+
+  if (perfil && perfil.role !== role) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-muted px-4">
+        <div className="max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-lift">
+          <Shield className="mx-auto size-12 text-warning" />
+          <h1 className="mt-4 text-2xl font-extrabold">Acesso não permitido</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Você não possui permissão para acessar esta página.</p>
+          <div className="mt-6 flex justify-center gap-2">
+            <Button asChild><Link to="/demo">Trocar de perfil</Link></Button>
+            <Button asChild variant="outline"><Link to="/">Voltar ao início</Link></Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
