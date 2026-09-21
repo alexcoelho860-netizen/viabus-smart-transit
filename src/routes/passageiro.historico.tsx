@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { RolePage } from "@/components/viabus/RolePages";
+export const Route = createFileRoute("/passageiro/historico")({ head: () => ({ meta: [{ title: "Histórico de viagens — ViaBus" }, { name: "description", content: "Histórico de viagens na área do passageiro ViaBus." }, { property: "og:title", content: "Histórico de viagens — ViaBus" }, { property: "og:description", content: "Use histórico de viagens no protótipo ViaBus." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: () => <RolePage mode="passageiro-historico" /> });
