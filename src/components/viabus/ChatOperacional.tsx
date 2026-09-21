@@ -21,10 +21,10 @@ export function ChatOperacional({
 
   const motorista = MOTORISTAS.find((m) => m.id === motoristaId);
   const fiscal = fiscais[0];
-  const interlocutor = papel === "motorista" ? fiscal.nome : (motorista?.nome ?? "Motorista");
+  const interlocutor = papel === "motorista" ? (fiscal?.nome ?? "Central ViaBus") : (motorista?.nome ?? "Motorista");
   const funcao =
     papel === "motorista"
-      ? `Fiscal de operações · ${fiscal.regiao}`
+      ? `Fiscal de operações · ${fiscal?.regiao ?? "Curitiba"}`
       : `Motorista · Veículo ${motorista?.veiculoCodigo ?? "—"}`;
   const rapidas = papel === "motorista" ? RESPOSTAS_RAPIDAS_MOTORISTA : RESPOSTAS_RAPIDAS_FISCAL;
 

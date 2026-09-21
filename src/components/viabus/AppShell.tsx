@@ -57,7 +57,7 @@ import { BuscaGlobal } from "@/components/viabus/BuscaGlobal";
 import type { UserRole } from "@/types/viabus";
 
 interface ItemNav {
-  to: LinkProps["to"];
+  to: NonNullable<LinkProps["to"]>;
   rotulo: string;
   icone: LucideIcon;
   exato?: boolean;

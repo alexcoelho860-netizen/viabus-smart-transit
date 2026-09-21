@@ -80,7 +80,7 @@ function Demo() {
 
   function entrar(opcao: (typeof OPCOES)[number]) {
     entrarComo(opcao.role);
-    toast.success(`Bem-vindo(a), ${opcao.pessoa.split("·")[0].trim()}!`, {
+    toast.success(`Bem-vindo(a), ${opcao.pessoa.split("·")[0]?.trim() ?? opcao.pessoa}!`, {
       description: `Você entrou como ${opcao.titulo.toLowerCase()}.`,
     });
     navigate({ to: opcao.destino });

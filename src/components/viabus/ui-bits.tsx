@@ -116,7 +116,7 @@ export function BadgeLotacao({ lotacao, curto }: { lotacao: Lotacao; curto?: boo
           lotacao === "baixa" ? "bg-success" : lotacao === "media" ? "bg-warning" : "bg-danger",
         )}
       />
-      {curto ? lotacao[0].toUpperCase() + lotacao.slice(1) : ROTULO_LOTACAO[lotacao]}
+      {curto ? lotacao.charAt(0).toUpperCase() + lotacao.slice(1) : ROTULO_LOTACAO[lotacao]}
     </span>
   );
 }
