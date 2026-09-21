@@ -1,7 +1,12 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
-    throw redirect({ to: "/demo" });
-  },
-});
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LogoViaBus, SeloDemo } from "@/components/viabus/ui-bits";
+import { useViaBus } from "@/store/viabus-store";
+export const Route=createFileRoute("/login")({head:()=>({meta:[{title:"Entrar — ViaBus"},{name:"description",content:"Entre no protótipo ViaBus com uma conta demonstrativa."},{property:"og:title",content:"Entrar — ViaBus"},{property:"og:description",content:"Acesse os perfis do protótipo ViaBus."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary"}]}),component:Login});
+function Login(){const {entrar}=useViaBus();const nav=useNavigate();const [email,setEmail]=useState("passageiro@viabus.app"),[senha,setSenha]=useState("viabus2026"),[ver,setVer]=useState(false),[erro,setErro]=useState("");function enviar(e:React.FormEvent){e.preventDefault();const r=entrar(email,senha);if(!r.sucesso){setErro(r.mensagem);return}toast.success(r.mensagem);nav({to:r.destino})}return <main className="grid min-h-screen place-items-center bg-muted px-4 py-10"><Card className="w-full max-w-md rounded-2xl p-6 shadow-lift"><div className="flex justify-between"><LogoViaBus/><SeloDemo/></div><h1 className="mt-5 text-2xl font-extrabold">Entrar no ViaBus</h1><p className="text-sm text-muted-foreground">Use uma conta demonstrativa ou acesse os quatro perfis rapidamente.</p><form className="mt-6 space-y-4" onSubmit={enviar}><div><Label>E-mail</Label><div className="relative mt-2"><Mail className="absolute left-3 top-3 size-4 text-muted-foreground"/><Input className="pl-9" type="email" value={email} onChange={e=>setEmail(e.target.value)}/></div></div><div><Label>Senha</Label><div className="relative mt-2"><LockKeyhole className="absolute left-3 top-3 size-4 text-muted-foreground"/><Input className="px-9" type={ver?"text":"password"} value={senha} onChange={e=>setSenha(e.target.value)}/><button type="button" className="absolute right-3 top-3" onClick={()=>setVer(!ver)} aria-label="Mostrar senha">{ver?<EyeOff className="size-4"/>:<Eye className="size-4"/>}</button></div></div>{erro&&<p className="text-sm text-danger">{erro}</p>}<div className="flex justify-end"><Link to="/recuperar-senha" className="text-sm font-semibold text-primary">Esqueci minha senha</Link></div><Button className="w-full" type="submit">Entrar</Button></form><Button asChild variant="outline" className="mt-3 w-full"><Link to="/demo">Acesso rápido aos 4 perfis</Link></Button><p className="mt-5 text-center text-sm">Ainda não possui conta? <Link to="/cadastro" className="font-semibold text-primary">Criar conta</Link></p></Card></main>}
