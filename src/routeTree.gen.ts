@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AjudaRouteImport } from './routes/ajuda'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PassageiroRouteImport } from './routes/passageiro'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
@@ -69,6 +71,11 @@ const AjudaRoute = AjudaRouteImport.update({
   path: '/ajuda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -92,6 +99,11 @@ const MotoristaRoute = MotoristaRouteImport.update({
 const PassageiroRoute = PassageiroRouteImport.update({
   id: '/passageiro',
   path: '/passageiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -279,11 +291,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/ajuda': typeof AjudaRoute
+  '/cadastro': typeof CadastroRoute
   '/demo': typeof DemoRoute
   '/fiscal': typeof FiscalRouteWithChildren
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRouteWithChildren
   '/passageiro': typeof PassageiroRouteWithChildren
+  '/recuperar-senha': typeof RecuperarSenhaRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
@@ -324,8 +338,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajuda': typeof AjudaRoute
+  '/cadastro': typeof CadastroRoute
   '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
@@ -368,11 +384,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/ajuda': typeof AjudaRoute
+  '/cadastro': typeof CadastroRoute
   '/demo': typeof DemoRoute
   '/fiscal': typeof FiscalRouteWithChildren
   '/login': typeof LoginRoute
   '/motorista': typeof MotoristaRouteWithChildren
   '/passageiro': typeof PassageiroRouteWithChildren
+  '/recuperar-senha': typeof RecuperarSenhaRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
@@ -416,11 +434,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/ajuda'
+    | '/cadastro'
     | '/demo'
     | '/fiscal'
     | '/login'
     | '/motorista'
     | '/passageiro'
+    | '/recuperar-senha'
     | '/admin/auditoria'
     | '/admin/banners'
     | '/admin/configuracoes'
@@ -461,8 +481,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/ajuda'
+    | '/cadastro'
     | '/demo'
     | '/login'
+    | '/recuperar-senha'
     | '/admin/auditoria'
     | '/admin/banners'
     | '/admin/configuracoes'
@@ -504,11 +526,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/ajuda'
+    | '/cadastro'
     | '/demo'
     | '/fiscal'
     | '/login'
     | '/motorista'
     | '/passageiro'
+    | '/recuperar-senha'
     | '/admin/auditoria'
     | '/admin/banners'
     | '/admin/configuracoes'
@@ -551,11 +575,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AjudaRoute: typeof AjudaRoute
+  CadastroRoute: typeof CadastroRoute
   DemoRoute: typeof DemoRoute
   FiscalRoute: typeof FiscalRouteWithChildren
   LoginRoute: typeof LoginRoute
   MotoristaRoute: typeof MotoristaRouteWithChildren
   PassageiroRoute: typeof PassageiroRouteWithChildren
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -579,6 +605,13 @@ declare module '@tanstack/react-router' {
       path: '/ajuda'
       fullPath: '/ajuda'
       preLoaderRoute: typeof AjudaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -614,6 +647,13 @@ declare module '@tanstack/react-router' {
       path: '/passageiro'
       fullPath: '/passageiro'
       preLoaderRoute: typeof PassageiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -984,11 +1024,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AjudaRoute: AjudaRoute,
+  CadastroRoute: CadastroRoute,
   DemoRoute: DemoRoute,
   FiscalRoute: FiscalRouteWithChildren,
   LoginRoute: LoginRoute,
   MotoristaRoute: MotoristaRouteWithChildren,
   PassageiroRoute: PassageiroRouteWithChildren,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
