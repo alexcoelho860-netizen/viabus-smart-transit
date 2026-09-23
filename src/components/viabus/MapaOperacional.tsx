@@ -1,29 +1,54 @@
-import { useMemo, useState } from "react";
-import { AlertTriangle, Bus, MapPin, TrafficCone } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  AlertTriangle,
+  Ban,
+  BusFront,
+  Crosshair,
+  LocateFixed,
+  MapPin,
+  Minus,
+  Plus,
+  TrafficCone,
+  Wrench,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MOTORISTAS, PARADAS, ROTULO_TIPO } from "@/data/mock";
+import {
+  CENTRO_CURITIBA,
+  COORDENADAS_LOCAIS,
+  COORDENADAS_OCORRENCIAS,
+  COORDENADAS_VEICULOS,
+  TRANSITO_SIMULADO,
+  type CoordenadaMapa,
+} from "@/data/map-data";
+import { nomeRotaPorCodigo, rotasPorCodigos } from "@/lib/viabus-display";
 import { cn } from "@/lib/utils";
 import { useViaBus } from "@/store/viabus-store";
-import {
-  BadgeGravidade,
-  BadgeLotacao,
-  SeloAtualizacao,
-  SeloDemo,
-} from "@/components/viabus/ui-bits";
+import { BadgeGravidade, BadgeLotacao, SeloAtualizacao } from "@/components/viabus/ui-bits";
 
 type Camada = "onibus" | "paradas" | "transito" | "ocorrencias";
 type Situacao = "todos" | "normal" | "atencao" | "atrasado" | "ocorrencia";
 
-const CAMADAS: { valor: Camada; rotulo: string; cor: string }[] = [
-  { valor: "onibus", rotulo: "Ônibus", cor: "bg-primary" },
-  { valor: "paradas", rotulo: "Pontos", cor: "bg-brand-ink" },
-  { valor: "transito", rotulo: "Trânsito", cor: "bg-warning" },
-  { valor: "ocorrencias", rotulo: "Ocorrências", cor: "bg-danger" },
+interface DetalheMapa {
+  tipo: "onibus" | "parada" | "transito" | "ocorrencia";
+  titulo: string;
+  linhas: string[];
+  posicao: CoordenadaMapa;
+  lotacao?: "baixa" | "media" | "alta";
+  gravidade?: "baixa" | "media" | "alta" | "critica";
+}
+
+const CAMADAS: Array<{ valor: Camada; rotulo: string }> = [
+  { valor: "onibus", rotulo: "Ônibus" },
+  { valor: "paradas", rotulo: "Pontos" },
+  { valor: "transito", rotulo: "Trânsito" },
+  { valor: "ocorrencias", rotulo: "Ocorrências" },
 ];
 
-const SITUACOES: { valor: Situacao; rotulo: string }[] = [
+const SITUACOES: Array<{ valor: Situacao; rotulo: string }> = [
   { valor: "todos", rotulo: "Todos" },
   { valor: "normal", rotulo: "Normal" },
   { valor: "atencao", rotulo: "Atenção" },
@@ -31,277 +56,279 @@ const SITUACOES: { valor: Situacao; rotulo: string }[] = [
   { valor: "ocorrencia", rotulo: "Com ocorrência" },
 ];
 
-/** Pontos de trânsito simulados sobre vias reais de Curitiba. */
-const PONTOS_TRANSITO = [
-  { id: "tr-1", x: 62, y: 48, nivel: "Lento", via: "Av. Sete de Setembro — Rebouças" },
-  { id: "tr-2", x: 28, y: 34, nivel: "Parado", via: "Centro — Praça Rui Barbosa" },
-  { id: "tr-3", x: 50, y: 82, nivel: "Lento", via: "Av. Winston Churchill — Capão Raso" },
-];
+let carregamentoMapa: Promise<void> | null = null;
 
-interface Selecionado {
-  titulo: string;
-  linhas: string[];
+function carregarGoogleMaps() {
+  if (typeof window === "undefined") return Promise.reject(new Error("Mapa indisponível no servidor"));
+  if (window.google?.maps) return Promise.resolve();
+  if (carregamentoMapa) return carregamentoMapa;
+
+  const chave = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] as string | undefined;
+  const canal = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID"] as string | undefined;
+  if (!chave) return Promise.reject(new Error("Chave de renderização não disponível"));
+
+  carregamentoMapa = new Promise<void>((resolve, reject) => {
+    const callback = `initViaBusMap_${Date.now()}`;
+    window[callback as keyof Window] = (() => {
+      delete window[callback as keyof Window];
+      resolve();
+    }) as never;
+    const script = document.createElement("script");
+    script.async = true;
+    script.defer = true;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(chave)}&loading=async&callback=${callback}&channel=${encodeURIComponent(canal ?? "viabus")}`;
+    script.onerror = () => reject(new Error("Não foi possível carregar o mapa"));
+    document.head.appendChild(script);
+  });
+  return carregamentoMapa;
 }
 
-export function MapaOperacional({
-  altura = "h-[460px]",
-  compacto = false,
-}: {
-  altura?: string;
-  compacto?: boolean;
-}) {
-  const { veiculos, ocorrencias, segundosDesdeAtualizacao } = useViaBus();
+function corToken(nome: string, fallback: string) {
+  if (typeof document === "undefined") return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(nome).trim() || fallback;
+}
+
+function iconeOcorrencia(tipo: string) {
+  if (tipo === "mecanico") return Wrench;
+  if (tipo === "congestionamento") return TrafficCone;
+  if (tipo === "via") return Ban;
+  return AlertTriangle;
+}
+
+export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { altura?: string; compacto?: boolean }) {
+  const { veiculos, linhas, ocorrencias, segundosDesdeAtualizacao } = useViaBus();
+  const elementoMapa = useRef<HTMLDivElement>(null);
+  const mapa = useRef<google.maps.Map | null>(null);
+  const elementos = useRef<Array<google.maps.Marker | google.maps.Polyline>>([]);
+  const marcadorUsuario = useRef<google.maps.Marker | null>(null);
   const [ativas, setAtivas] = useState<Camada[]>(["onibus", "paradas", "transito", "ocorrencias"]);
   const [situacao, setSituacao] = useState<Situacao>("todos");
-  const [selecionado, setSelecionado] = useState<Selecionado | null>(null);
+  const [detalhe, setDetalhe] = useState<DetalheMapa | null>(null);
+  const [mapaPronto, setMapaPronto] = useState(false);
+  const [erroMapa, setErroMapa] = useState("");
+  const [localizando, setLocalizando] = useState(false);
+  const [erroLocalizacao, setErroLocalizacao] = useState("");
 
-  const ocorrenciasVisiveis = useMemo(
-    () => ocorrencias.filter((o) => o.status !== "encerrada"),
-    [ocorrencias],
-  );
-
+  const ocorrenciasVisiveis = useMemo(() => ocorrencias.filter((o) => o.status !== "encerrada"), [ocorrencias]);
   const veiculosVisiveis = useMemo(() => {
     const comOcorrencia = new Set(ocorrenciasVisiveis.map((o) => o.veiculoCodigo));
-    return veiculos
-      .filter((v) => v.status === "em_rota")
-      .filter((v) => {
-        if (situacao === "todos") return true;
-        if (situacao === "ocorrencia") return comOcorrencia.has(v.codigo);
-        if (situacao === "atrasado") return v.atrasoMin >= 10;
-        if (situacao === "atencao") return v.atrasoMin >= 5 && v.atrasoMin < 10;
-        return v.atrasoMin < 5;
-      });
+    return veiculos.filter((v) => v.status === "em_rota").filter((v) => {
+      if (situacao === "todos") return true;
+      if (situacao === "ocorrencia") return comOcorrencia.has(v.codigo);
+      if (situacao === "atrasado") return v.atrasoMin >= 10;
+      if (situacao === "atencao") return v.atrasoMin >= 5 && v.atrasoMin < 10;
+      return v.atrasoMin < 5;
+    });
   }, [ocorrenciasVisiveis, situacao, veiculos]);
 
+  useEffect(() => {
+    let ativo = true;
+    carregarGoogleMaps()
+      .then(() => {
+        if (!ativo || !elementoMapa.current) return;
+        mapa.current = new google.maps.Map(elementoMapa.current, {
+          center: CENTRO_CURITIBA,
+          zoom: 12,
+          clickableIcons: false,
+          disableDefaultUI: true,
+          gestureHandling: "greedy",
+          styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
+        });
+        mapa.current.addListener("click", () => setDetalhe(null));
+        setMapaPronto(true);
+      })
+      .catch(() => ativo && setErroMapa("O mapa não pôde ser carregado agora."));
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapaPronto || !mapa.current) return;
+    elementos.current.forEach((item) => item.setMap(null));
+    elementos.current = [];
+    const adicionar = (posicao: CoordenadaMapa, cor: string, rotulo: string, aoClicar: () => void, forma?: google.maps.SymbolPath) => {
+      const marker = new google.maps.Marker({
+        map: mapa.current,
+        position: posicao,
+        title: rotulo,
+        icon: {
+          path: forma ?? google.maps.SymbolPath.CIRCLE,
+          fillColor: cor,
+          fillOpacity: 1,
+          strokeColor: corToken("--card", "#ffffff"),
+          strokeWeight: 2,
+          scale: forma ? 6 : 7,
+        },
+      });
+      marker.addListener("click", aoClicar);
+      elementos.current.push(marker);
+    };
+
+    const corPrimaria = corToken("--primary", "#2563eb");
+    const corSucesso = corToken("--success", "#22c55e");
+    const corAlerta = corToken("--warning", "#f59e0b");
+    const corPerigo = corToken("--danger", "#ef4444");
+    const corNeutra = corToken("--brand-ink", "#0f172a");
+    const comOcorrencia = new Set(ocorrenciasVisiveis.map((o) => o.veiculoCodigo));
+
+    if (ativas.includes("onibus")) {
+      veiculosVisiveis.forEach((v, indice) => {
+        const posicao = COORDENADAS_VEICULOS[indice % COORDENADAS_VEICULOS.length] ?? CENTRO_CURITIBA;
+        const motorista = MOTORISTAS.find((m) => m.id === v.motoristaId);
+        const cor = comOcorrencia.has(v.codigo) ? corPerigo : v.atrasoMin >= 10 ? corAlerta : v.atrasoMin >= 5 ? corAlerta : corSucesso;
+        adicionar(posicao, cor, `Ônibus ${v.codigo}`, () => {
+          mapa.current?.panTo(posicao);
+          setDetalhe({
+            tipo: "onibus",
+            titulo: `Ônibus ${v.codigo}`,
+            linhas: [
+              nomeRotaPorCodigo(v.linhaCodigo, linhas),
+              `Motorista: ${motorista?.nome ?? "Não informado"}`,
+              `${v.velocidadeKmh} km/h · previsão em ${Math.max(2, v.atrasoMin + 2)} min`,
+              `Atualizado há ${segundosDesdeAtualizacao}s`,
+            ],
+            posicao,
+            lotacao: v.lotacao,
+          });
+        });
+      });
+    }
+
+    if (ativas.includes("paradas")) {
+      PARADAS.forEach((p) => {
+        const posicao = COORDENADAS_LOCAIS[p.nome];
+        if (!posicao) return;
+        adicionar(posicao, corNeutra, p.nome, () => setDetalhe({
+          tipo: "parada",
+          titulo: p.nome,
+          linhas: [p.endereco, ...rotasPorCodigos(p.linhas, linhas), p.abrigo ? "Ponto com abrigo" : "Ponto sem abrigo"],
+          posicao,
+        }));
+      });
+    }
+
+    if (ativas.includes("transito")) {
+      TRANSITO_SIMULADO.forEach((t) => adicionar(t.posicao, corAlerta, `Trânsito em ${t.via}`, () => setDetalhe({
+        tipo: "transito",
+        titulo: `Trânsito ${t.nivel.toLowerCase()}`,
+        linhas: [t.via, "Condição simulada para avaliação do produto"],
+        posicao: t.posicao,
+      }), google.maps.SymbolPath.BACKWARD_CLOSED_ARROW));
+    }
+
+    if (ativas.includes("ocorrencias")) {
+      ocorrenciasVisiveis.forEach((o, indice) => {
+        const posicao = COORDENADAS_OCORRENCIAS[indice % COORDENADAS_OCORRENCIAS.length] ?? CENTRO_CURITIBA;
+        adicionar(posicao, corPerigo, `${ROTULO_TIPO[o.tipo]} — ${o.protocolo}`, () => setDetalhe({
+          tipo: "ocorrencia",
+          titulo: ROTULO_TIPO[o.tipo],
+          linhas: [o.local, `${o.registradaEm} · Veículo ${o.veiculoCodigo}`, nomeRotaPorCodigo(o.linhaCodigo, linhas), `Status: ${o.status.replaceAll("_", " ")}`],
+          posicao,
+          gravidade: o.gravidade,
+        }), google.maps.SymbolPath.BACKWARD_CLOSED_ARROW);
+      });
+    }
+
+    if (detalhe?.tipo === "onibus") {
+      const linha = veiculos.find((v) => detalhe.titulo.includes(v.codigo));
+      const rota = linhas.find((item) => item.codigo === linha?.linhaCodigo);
+      if (rota) {
+        const caminho = rota.paradas.map((p) => COORDENADAS_LOCAIS[p]).filter((p): p is CoordenadaMapa => Boolean(p));
+        if (caminho.length > 1) {
+          const polyline = new google.maps.Polyline({ map: mapa.current, path: caminho, strokeColor: corPrimaria, strokeOpacity: 0.85, strokeWeight: 5 });
+          elementos.current.push(polyline);
+        }
+      }
+    }
+  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, ocorrenciasVisiveis, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
+
   function alternar(camada: Camada) {
-    setAtivas((atual) =>
-      atual.includes(camada) ? atual.filter((c) => c !== camada) : [...atual, camada],
-    );
+    setAtivas((atual) => atual.includes(camada) ? atual.filter((item) => item !== camada) : [...atual, camada]);
   }
 
+  function localizar() {
+    setErroLocalizacao("");
+    if (!navigator.geolocation) {
+      setErroLocalizacao("Localização não disponível neste dispositivo.");
+      return;
+    }
+    setLocalizando(true);
+    navigator.geolocation.getCurrentPosition(({ coords }) => {
+      const posicao = { lat: coords.latitude, lng: coords.longitude };
+      mapa.current?.panTo(posicao);
+      mapa.current?.setZoom(15);
+      marcadorUsuario.current?.setMap(null);
+      marcadorUsuario.current = new google.maps.Marker({ map: mapa.current, position: posicao, title: "Sua localização" });
+      setLocalizando(false);
+    }, () => {
+      setErroLocalizacao("Localização não disponível. Verifique a permissão do navegador.");
+      setLocalizando(false);
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  }
+
+  const IconeDetalhe = detalhe?.tipo === "ocorrencia" ? iconeOcorrencia(ocorrenciasVisiveis.find((o) => ROTULO_TIPO[o.tipo] === detalhe.titulo)?.tipo ?? "outro") : detalhe?.tipo === "onibus" ? BusFront : detalhe?.tipo === "transito" ? TrafficCone : MapPin;
+
   return (
-    <Card className="gap-0 overflow-hidden rounded-2xl border-border/70 p-0 shadow-soft">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-card px-4 py-3">
-        <div className="flex flex-wrap gap-2">
-          {CAMADAS.map((c) => {
-            const ativo = ativas.includes(c.valor);
-            return (
-              <button
-                key={c.valor}
-                onClick={() => alternar(c.valor)}
-                aria-pressed={ativo}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                  ativo
-                    ? "border-primary/30 bg-primary/10 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:bg-muted",
-                )}
-              >
-                <span className={cn("size-2 rounded-full", c.cor, !ativo && "opacity-40")} />
-                {c.rotulo}
-              </button>
-            );
-          })}
+    <Card className="gap-0 overflow-hidden rounded-lg border-border/70 p-0 shadow-soft">
+      <div className="border-b border-border/70 bg-card p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-bold">Mapa operacional</h2>
+            <p className="truncate text-xs text-muted-foreground">Acompanhe a operação do transporte em Curitiba.</p>
+          </div>
+          <SeloAtualizacao />
         </div>
-        <SeloAtualizacao />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 border-b border-border/70 bg-card px-4 py-2.5">
-        <span className="text-xs font-semibold text-muted-foreground">Situação:</span>
-        {SITUACOES.map((s) => (
-          <button
-            key={s.valor}
-            onClick={() => setSituacao(s.valor)}
-            aria-pressed={situacao === s.valor}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-              situacao === s.valor
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground hover:bg-muted",
-            )}
-          >
-            {s.rotulo}
-          </button>
-        ))}
-        <SeloDemo texto="Localização simulada" className="ml-auto" />
-      </div>
-
-      <div
-        className={cn("relative w-full overflow-hidden bg-muted", altura)}
-        style={{
-          backgroundImage:
-            "linear-gradient(0deg, rgba(148,163,184,.25) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.25) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-        onClick={() => setSelecionado(null)}
-      >
-        {/* Vias principais (representação esquemática) */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-0 top-[38%] h-3 w-full -rotate-3 rounded-full bg-card/90" />
-          <div className="absolute left-[30%] top-0 h-full w-3 rotate-6 rounded-full bg-card/90" />
-          <div className="absolute left-0 top-[70%] h-2.5 w-full rotate-2 rounded-full bg-card/80" />
-          <div className="absolute left-[72%] top-0 h-full w-2.5 -rotate-3 rounded-full bg-card/80" />
-          <div className="absolute left-[6%] top-[8%] size-28 rounded-2xl bg-card/55" />
-          <div className="absolute bottom-[12%] right-[10%] size-32 rounded-2xl bg-card/55" />
-          <div className="absolute left-[42%] top-[14%] size-24 rounded-2xl bg-success/15" />
-        </div>
-
-        {ativas.includes("transito") &&
-          PONTOS_TRANSITO.map((t) => (
-            <button
-              key={t.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelecionado({
-                  titulo: `Trânsito ${t.nivel.toLowerCase()}`,
-                  linhas: [t.via, "Monitoramento simulado para demonstração"],
-                });
-              }}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${t.x}%`, top: `${t.y}%` }}
-              aria-label={`Trânsito em ${t.via}`}
-            >
-              <span className="grid size-7 place-items-center rounded-full bg-warning text-warning-foreground shadow-soft">
-                <TrafficCone className="size-4" />
-              </span>
-            </button>
-          ))}
-
-        {ativas.includes("paradas") &&
-          PARADAS.map((p) => (
-            <button
-              key={p.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelecionado({
-                  titulo: p.nome,
-                  linhas: [
-                    `${p.endereco} · ${p.bairro}`,
-                    `Rotas demonstrativas: ${p.linhas.join(", ")}`,
-                    p.abrigo ? "Ponto com abrigo" : "Ponto sem abrigo",
-                  ],
-                });
-              }}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${p.x}%`, top: `${p.y}%` }}
-              aria-label={`Ponto ${p.nome}`}
-            >
-              <span className="grid size-6 place-items-center rounded-full bg-brand-ink text-white shadow-soft ring-2 ring-card">
-                <MapPin className="size-3.5" />
-              </span>
-            </button>
-          ))}
-
-        {ativas.includes("onibus") &&
-          veiculosVisiveis.map((v) => {
-            const motorista = MOTORISTAS.find((m) => m.id === v.motoristaId);
-            return (
-              <button
-                key={v.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelecionado({
-                    titulo: `Veículo ${v.codigo} — ${v.linhaCodigo}`,
-                    linhas: [
-                      `Motorista: ${motorista?.nome ?? "—"}`,
-                      `Rota demonstrativa ${v.linhaCodigo} · ${v.velocidadeKmh} km/h`,
-                      `Atraso de ${v.atrasoMin} min · lotação ${v.lotacao}`,
-                      `Última atualização: há ${segundosDesdeAtualizacao}s (simulada)`,
-                    ],
-                  });
-                }}
-                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-[4500ms] ease-linear"
-                style={{ left: `${v.x}%`, top: `${v.y}%` }}
-                aria-label={`Ônibus ${v.codigo}`}
-              >
-                <span className="relative flex">
-                  <span
-                    className={cn(
-                      "pulse-ring absolute inset-0 rounded-full",
-                      v.lotacao === "alta"
-                        ? "bg-danger"
-                        : v.lotacao === "media"
-                          ? "bg-warning"
-                          : "bg-success",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "relative grid size-8 place-items-center rounded-full text-white shadow-lift ring-2 ring-card",
-                      v.lotacao === "alta"
-                        ? "bg-danger"
-                        : v.lotacao === "media"
-                          ? "bg-warning"
-                          : "bg-primary",
-                    )}
-                  >
-                    <Bus className="size-4" />
-                  </span>
-                </span>
-                <span className="mt-1 block rounded-md bg-card/95 px-1.5 text-[10px] font-bold text-foreground shadow-soft">
-                  {v.codigo}
-                </span>
-              </button>
-            );
-          })}
-
-        {ativas.includes("ocorrencias") &&
-          ocorrenciasVisiveis.map((o) => (
-            <button
-              key={o.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelecionado({
-                  titulo: `${ROTULO_TIPO[o.tipo]} · ${o.protocolo}`,
-                  linhas: [o.local, o.descricao, `Veículo ${o.veiculoCodigo} · ${o.motorista}`],
-                });
-              }}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${o.x}%`, top: `${o.y}%` }}
-              aria-label={`Ocorrência ${o.protocolo}`}
-            >
-              <span className="grid size-8 place-items-center rounded-lg bg-danger text-danger-foreground shadow-lift ring-2 ring-card">
-                <AlertTriangle className="size-4" />
-              </span>
-            </button>
-          ))}
-
-        {selecionado && (
-          <Card className="absolute bottom-4 left-4 right-4 gap-1 rounded-xl border-border/70 p-4 shadow-lift sm:right-auto sm:max-w-sm">
-            <p className="text-sm font-bold text-foreground">{selecionado.titulo}</p>
-            {selecionado.linhas.map((l) => (
-              <p key={l} className="text-xs text-muted-foreground">
-                {l}
-              </p>
-            ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-2 h-7 w-fit px-2 text-xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelecionado(null);
-              }}
-            >
-              Fechar
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {CAMADAS.map((item) => (
+            <Button key={item.valor} type="button" size="sm" variant={ativas.includes(item.valor) ? "default" : "outline"} className="shrink-0 rounded-full" aria-pressed={ativas.includes(item.valor)} onClick={() => alternar(item.valor)}>
+              {item.rotulo}
             </Button>
-          </Card>
-        )}
+          ))}
+        </div>
+        {!compacto && <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+          {SITUACOES.map((item) => (
+            <Button key={item.valor} type="button" size="sm" variant={situacao === item.valor ? "secondary" : "ghost"} className="shrink-0 rounded-full" aria-pressed={situacao === item.valor} onClick={() => setSituacao(item.valor)}>
+              {item.rotulo}
+            </Button>
+          ))}
+        </div>}
       </div>
 
-      {!compacto && (
-        <div className="flex flex-wrap items-center gap-4 border-t border-border/70 bg-card px-4 py-3 text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">Legenda:</span>
-          <BadgeLotacao lotacao="baixa" />
-          <BadgeLotacao lotacao="media" />
-          <BadgeLotacao lotacao="alta" />
-          <span className="inline-flex items-center gap-1.5">
-            <AlertTriangle className="size-3.5 text-danger" /> Ocorrência ativa
-          </span>
-          <BadgeGravidade gravidade="critica" />
-          <span className="ml-auto">Localização simulada para demonstração.</span>
+      <div className={cn("relative w-full overflow-hidden bg-muted", altura)}>
+        <div ref={elementoMapa} className="absolute inset-0" aria-label="Mapa geográfico de Curitiba" />
+        {!mapaPronto && !erroMapa && <div className="absolute inset-0 grid place-items-center bg-muted"><p className="text-sm text-muted-foreground">Carregando mapa de Curitiba…</p></div>}
+        {erroMapa && <div className="absolute inset-0 grid place-items-center bg-muted p-6 text-center"><div><AlertTriangle className="mx-auto size-8 text-warning"/><p className="mt-3 font-semibold">{erroMapa}</p><Button className="mt-4" variant="outline" onClick={() => window.location.reload()}>Tentar novamente</Button></div></div>}
+
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Aumentar zoom" onClick={() => mapa.current?.setZoom((mapa.current.getZoom() ?? 12) + 1)}><Plus /></Button>
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Diminuir zoom" onClick={() => mapa.current?.setZoom((mapa.current.getZoom() ?? 12) - 1)}><Minus /></Button>
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Centralizar em Curitiba" onClick={() => { mapa.current?.panTo(CENTRO_CURITIBA); mapa.current?.setZoom(12); }}><Crosshair /></Button>
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Usar minha localização" disabled={localizando} onClick={localizar}><LocateFixed /></Button>
         </div>
-      )}
+
+        {erroLocalizacao && <div className="absolute left-3 right-16 top-3 rounded-lg border border-border bg-card p-3 text-xs shadow-lift sm:right-auto sm:max-w-sm">{erroLocalizacao}</div>}
+
+        {detalhe && <Card className="absolute inset-x-3 bottom-3 gap-2 rounded-lg border-border/70 p-4 shadow-lift sm:left-4 sm:right-auto sm:max-w-sm">
+          <div className="flex items-start gap-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"><IconeDetalhe className="size-4" /></span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold">{detalhe.titulo}</p>
+              {detalhe.linhas.map((linha) => <p key={linha} className="mt-0.5 text-xs text-muted-foreground">{linha}</p>)}
+              <div className="mt-2 flex flex-wrap gap-2">{detalhe.lotacao && <BadgeLotacao lotacao={detalhe.lotacao} />}{detalhe.gravidade && <BadgeGravidade gravidade={detalhe.gravidade} />}</div>
+            </div>
+            <Button size="icon" variant="ghost" className="size-8" aria-label="Fechar detalhes" onClick={() => setDetalhe(null)}><X /></Button>
+          </div>
+        </Card>}
+      </div>
+
+      {!compacto && <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/70 bg-card px-4 py-3 text-xs text-muted-foreground">
+        <span className="font-semibold text-foreground">Situação:</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-success" /> Normal</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-warning" /> Atenção ou atraso</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2 rounded-full bg-danger" /> Ocorrência</span>
+        <span className="sm:ml-auto">Posições operacionais simuladas sobre mapa real.</span>
+      </div>}
     </Card>
   );
 }
