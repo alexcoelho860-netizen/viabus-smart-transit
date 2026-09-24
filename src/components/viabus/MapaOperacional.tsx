@@ -1,3 +1,4 @@
+/// <reference types="google.maps" />
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -60,7 +61,7 @@ let carregamentoMapa: Promise<void> | null = null;
 
 function carregarGoogleMaps() {
   if (typeof window === "undefined") return Promise.reject(new Error("Mapa indisponível no servidor"));
-  if (window.google?.maps) return Promise.resolve();
+  if (typeof google !== "undefined" && google.maps) return Promise.resolve();
   if (carregamentoMapa) return carregamentoMapa;
 
   const chave = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] as string | undefined;
@@ -69,10 +70,11 @@ function carregarGoogleMaps() {
 
   carregamentoMapa = new Promise<void>((resolve, reject) => {
     const callback = `initViaBusMap_${Date.now()}`;
-    window[callback as keyof Window] = (() => {
-      delete window[callback as keyof Window];
+    const janela = window as Window & Record<string, unknown>;
+    janela[callback] = () => {
+      delete janela[callback];
       resolve();
-    }) as never;
+    };
     const script = document.createElement("script");
     script.async = true;
     script.defer = true;
