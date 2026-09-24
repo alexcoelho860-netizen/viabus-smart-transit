@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LINHAS } from "@/data/mock";
 import { useViaBus } from "@/store/viabus-store";
 import { TituloPagina } from "@/components/viabus/ui-bits";
+import { RouteCard } from "@/components/viabus/RouteCard";
 
 export const Route = createFileRoute("/passageiro/favoritos")({
   head: () => ({ meta: [
@@ -13,6 +13,8 @@ export const Route = createFileRoute("/passageiro/favoritos")({
     { name: "description", content: "Suas linhas salvas com intervalo, atraso médio e acesso rápido ao itinerário." },
     { property: "og:title", content: "Linhas favoritas — ViaBus" },
     { property: "og:description", content: "Acompanhe rapidamente as linhas que você mais usa." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Pagina,
 });
@@ -33,15 +35,7 @@ function Pagina() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {salvas.map((l) => (
-            <Card key={l.id} className="flex-row items-center justify-between gap-3 rounded-2xl border-border/70 p-5 shadow-soft">
-              <div className="flex items-center gap-3">
-                <span className="grid size-12 place-items-center rounded-xl text-sm font-extrabold text-white" style={{ backgroundColor: l.cor }}>{l.codigo}</span>
-                <div><p className="font-bold">{l.nome}</p><p className="text-xs text-muted-foreground">a cada {l.intervaloMin} min · atraso {l.atrasoMedioMin} min</p></div>
-              </div>
-              <button onClick={() => { alternarFavorito(l.codigo); toast("Linha removida dos favoritos"); }} aria-label="Remover"><Heart className="size-5 fill-danger text-danger" /></button>
-            </Card>
-          ))}
+          {salvas.map((l) => <RouteCard key={l.id} linha={l} favorita aoFavoritar={() => alternarFavorito(l.codigo)} />)}
         </div>
       )}
       {outras.length > 0 && (
@@ -49,13 +43,7 @@ function Pagina() {
           <h2 className="mb-3 text-lg font-bold">Sugestões para salvar</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {outras.map((l) => (
-              <Card key={l.id} className="flex-row items-center justify-between gap-3 rounded-2xl border-border/70 p-4 shadow-soft">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-xl text-xs font-extrabold text-white" style={{ backgroundColor: l.cor }}>{l.codigo}</span>
-                  <p className="text-sm font-semibold">{l.nome}</p>
-                </div>
-                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => { alternarFavorito(l.codigo); toast.success("Linha salva nos favoritos"); }}>Salvar</Button>
-              </Card>
+              <RouteCard key={l.id} linha={l} favorita={false} aoFavoritar={() => alternarFavorito(l.codigo)} compacta />
             ))}
           </div>
         </section>

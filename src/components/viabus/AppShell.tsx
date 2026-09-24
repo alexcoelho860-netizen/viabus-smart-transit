@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, type LinkProps } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -19,6 +19,7 @@ import {
   Megaphone,
   MessageSquare,
   Moon,
+  MoreHorizontal,
   PlayCircle,
   Route as RouteIcon,
   Search,
@@ -120,11 +121,11 @@ const TITULO_PAPEL: Record<UserRole, string> = {
 export function AppShell({ role, children }: { role: UserRole; children: ReactNode }) {
   const {
     perfil,
-    entrarComo,
     sair,
     notificacoes,
     naoLidas,
     marcarTodasLidas,
+    marcarLida,
     tema,
     definirTema,
     online,
@@ -133,13 +134,13 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
   const [buscaAberta, setBuscaAberta] = useState(false);
   const [confirmarSaida, setConfirmarSaida] = useState(false);
 
-  // Acesso direto sem sessão inicia a demonstração; perfis ativos não trocam de área pela URL.
-  useEffect(() => {
-    if (!perfil) entrarComo(role);
-  }, [perfil, role, entrarComo]);
-
   const itens = NAV[role];
-  const itensMobile = useMemo(() => itens.slice(0, 5), [itens]);
+  const itensMobile = useMemo(() => itens.slice(0, 4), [itens]);
+  const itensExtras = useMemo(() => itens.slice(4), [itens]);
+
+  if (!perfil) {
+    return <main className="grid min-h-screen place-items-center bg-muted px-4"><Card className="max-w-md items-center gap-3 rounded-lg p-8 text-center shadow-lift"><Shield className="size-12 text-primary"/><h1 className="text-2xl font-extrabold">Entre para continuar</h1><p className="text-sm text-muted-foreground">Escolha uma conta demonstrativa para acessar esta área com as permissões corretas.</p><div className="mt-2 flex flex-wrap justify-center gap-2"><Button asChild><Link to="/login">Entrar</Link></Button><Button asChild variant="outline"><Link to="/demo">Acesso rápido</Link></Button></div></Card></main>;
+  }
 
   if (perfil && perfil.role !== role) {
     return (
@@ -226,6 +227,7 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2" />
               Buscar rota, veículo, motorista ou protocolo
             </button>
+            <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Abrir busca" onClick={() => setBuscaAberta(true)}><Search /></Button>
             <div className="ml-auto flex items-center gap-2">
               {!online && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-semibold text-warning-foreground">
@@ -273,7 +275,7 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
                     <DropdownMenuItem
                       key={n.id}
                       className="flex-col items-start gap-0.5 py-2.5"
-                      onSelect={() => marcarTodasLidas()}
+                      onSelect={() => marcarLida(n.id)}
                     >
                       <span className="flex w-full items-center gap-2 text-sm font-semibold">
                         {!n.lida && <span className="size-1.5 rounded-full bg-primary" />}
@@ -351,6 +353,12 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
               {item.rotulo}
             </Link>
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild><Button variant="ghost" className="h-auto rounded-none py-2.5 text-muted-foreground"><span className="flex flex-col items-center gap-1 text-[11px]"><MoreHorizontal className="size-5"/>Mais</span></Button></DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="mb-2 w-56">
+              {itensExtras.map((item) => <DropdownMenuItem key={item.to} asChild><Link to={item.to}><item.icone className="size-4"/>{item.rotulo}</Link></DropdownMenuItem>)}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </nav>
 
