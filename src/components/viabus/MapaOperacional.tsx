@@ -70,7 +70,7 @@ function carregarGoogleMaps() {
 
   carregamentoMapa = new Promise<void>((resolve, reject) => {
     const callback = `initViaBusMap_${Date.now()}`;
-    const janela = window as Window & Record<string, unknown>;
+    const janela = window as unknown as Window & Record<string, unknown>;
     janela[callback] = () => {
       delete janela[callback];
       resolve();
@@ -175,8 +175,9 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
     const comOcorrencia = new Set(ocorrenciasVisiveis.map((o) => o.veiculoCodigo));
 
     if (ativas.includes("onibus")) {
-      veiculosVisiveis.forEach((v, indice) => {
-        const posicao = COORDENADAS_VEICULOS[indice % COORDENADAS_VEICULOS.length] ?? CENTRO_CURITIBA;
+      veiculosVisiveis.forEach((v) => {
+        const indice = veiculos.findIndex((item) => item.id === v.id);
+        const posicao = COORDENADAS_VEICULOS[indice] ?? CENTRO_CURITIBA;
         const motorista = MOTORISTAS.find((m) => m.id === v.motoristaId);
         const cor = comOcorrencia.has(v.codigo) ? corPerigo : v.atrasoMin >= 10 ? corAlerta : v.atrasoMin >= 5 ? corAlerta : corSucesso;
         adicionar(posicao, cor, `Ônibus ${v.codigo}`, () => {
@@ -220,8 +221,9 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
     }
 
     if (ativas.includes("ocorrencias")) {
-      ocorrenciasVisiveis.forEach((o, indice) => {
-        const posicao = COORDENADAS_OCORRENCIAS[indice % COORDENADAS_OCORRENCIAS.length] ?? CENTRO_CURITIBA;
+      ocorrenciasVisiveis.forEach((o) => {
+        const indice = ocorrencias.findIndex((item) => item.id === o.id);
+        const posicao = COORDENADAS_OCORRENCIAS[indice] ?? COORDENADAS_VEICULOS[veiculos.findIndex((v) => v.codigo === o.veiculoCodigo)] ?? CENTRO_CURITIBA;
         adicionar(posicao, corPerigo, `${ROTULO_TIPO[o.tipo]} — ${o.protocolo}`, () => setDetalhe({
           tipo: "ocorrencia",
           titulo: ROTULO_TIPO[o.tipo],
@@ -243,7 +245,7 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         }
       }
     }
-  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, ocorrenciasVisiveis, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
+  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, ocorrencias, ocorrenciasVisiveis, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
 
   function alternar(camada: Camada) {
     setAtivas((atual) => atual.includes(camada) ? atual.filter((item) => item !== camada) : [...atual, camada]);
