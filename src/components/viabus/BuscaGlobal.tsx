@@ -11,6 +11,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { PARADAS, ROTULO_TIPO } from "@/data/mock";
+import { nomeRota } from "@/lib/viabus-display";
 import { useViaBus } from "@/store/viabus-store";
 
 /** Pesquisa global: rotas, veículos, motoristas, paradas, ocorrências e protocolos. */
@@ -84,10 +85,10 @@ export function BuscaGlobal({ aberta, aoFechar }: { aberta: boolean; aoFechar: (
         <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
 
         {resultados.rotas.length > 0 && (
-          <CommandGroup heading="Rotas demonstrativas">
+          <CommandGroup heading="Rotas">
             {resultados.rotas.map((l) => (
               <CommandItem key={l.id} onSelect={() => ir("rotas")}>
-                <RouteIcon className="size-4" /> {l.codigo} — {l.nome}
+                <RouteIcon className="size-4" /> {nomeRota(l)}
               </CommandItem>
             ))}
           </CommandGroup>
