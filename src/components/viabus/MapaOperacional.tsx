@@ -72,6 +72,7 @@ function carregarGoogleMaps() {
   carregamentoMapa = new Promise<void>((resolve, reject) => {
     const callback = `initViaBusMap_${Date.now()}`;
     const janela = window as unknown as Window & Record<string, unknown>;
+    janela.gm_authFailure = () => window.dispatchEvent(new Event("viabus-map-unavailable"));
     janela[callback] = () => {
       delete janela[callback];
       resolve();
@@ -131,6 +132,28 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
 
   useEffect(() => {
     let ativo = true;
+    let iniciandoAlternativo = false;
+    async function iniciarAlternativo() {
+      if (!ativo || iniciandoAlternativo || mapaAlternativo.current || !elementoMapa.current) return;
+      iniciandoAlternativo = true;
+      try {
+        const L = await import("leaflet");
+        if (!ativo || !elementoMapa.current) return;
+        elementoMapa.current.replaceChildren();
+        mapa.current = null;
+        leaflet.current = L;
+        const alternativo = L.map(elementoMapa.current, { zoomControl: false, attributionControl: true }).setView([CENTRO_CURITIBA.lat, CENTRO_CURITIBA.lng], 12);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(alternativo);
+        mapaAlternativo.current = alternativo;
+        camadaAlternativa.current = L.layerGroup().addTo(alternativo);
+        alternativo.on("click", () => setDetalhe(null));
+        setProvedor("alternativo");
+        setMapaPronto(true);
+      } catch {
+        if (ativo) setErroMapa("O mapa não pôde ser carregado agora.");
+      }
+    }
+    window.addEventListener("viabus-map-unavailable", iniciarAlternativo);
     carregarGoogleMaps()
       .then(() => {
         if (!ativo || !elementoMapa.current) return;
@@ -146,25 +169,10 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         setProvedor("google");
         setMapaPronto(true);
       })
-      .catch(async () => {
-        if (!ativo || !elementoMapa.current) return;
-        try {
-          const L = await import("leaflet");
-          if (!ativo || !elementoMapa.current) return;
-          leaflet.current = L;
-          const alternativo = L.map(elementoMapa.current, { zoomControl: false, attributionControl: true }).setView([CENTRO_CURITIBA.lat, CENTRO_CURITIBA.lng], 12);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(alternativo);
-          mapaAlternativo.current = alternativo;
-          camadaAlternativa.current = L.layerGroup().addTo(alternativo);
-          alternativo.on("click", () => setDetalhe(null));
-          setProvedor("alternativo");
-          setMapaPronto(true);
-        } catch {
-          if (ativo) setErroMapa("O mapa não pôde ser carregado agora.");
-        }
-      });
+      .catch(iniciarAlternativo);
     return () => {
       ativo = false;
+      window.removeEventListener("viabus-map-unavailable", iniciarAlternativo);
       mapaAlternativo.current?.remove();
       mapaAlternativo.current = null;
     };
