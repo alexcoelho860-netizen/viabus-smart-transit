@@ -182,6 +182,20 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
   const [sequencia, setSequencia] = useState(482);
   const [segundosDesdeAtualizacao, setSegundos] = useState(0);
 
+  // A sessão demonstrativa vive apenas nesta aba. Nenhuma permissão real depende deste armazenamento.
+  useEffect(() => {
+    try {
+      const salvo = sessionStorage.getItem("viabus-demo-perfil");
+      if (salvo) {
+        const usuario = JSON.parse(salvo) as UserProfile;
+        if (["passageiro", "motorista", "fiscal", "admin"].includes(usuario.role)) setPerfil(usuario);
+      }
+    } catch { sessionStorage.removeItem("viabus-demo-perfil"); }
+  }, []);
+  useEffect(() => {
+    if (perfil) sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(perfil));
+  }, [perfil]);
+
   // Simulação de tempo real: movimenta a frota e renova o selo "Atualizado agora".
   useEffect(() => {
     const relogio = setInterval(() => setSegundos((s) => s + 1), 1000);
@@ -233,8 +247,8 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const entrarComo = useCallback((role: UserRole) => setPerfil(PERFIS[role]), []);
-  const sair = useCallback(() => setPerfil(null), []);
+  const entrarComo = useCallback((role: UserRole) => { sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, []);
+  const sair = useCallback(() => { sessionStorage.removeItem("viabus-demo-perfil"); setPerfil(null); }, []);
 
   const entrar = useCallback(
     (email: string, senha: string): Resultado => {
@@ -242,6 +256,7 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
       if (!conta) return { ok: false, erro: "Não conseguimos encontrar uma conta com esses dados." };
       if (conta.senha !== senha) return { ok: false, erro: "Senha incorreta. Tente novamente." };
       setPerfil({ ...conta.perfil, ultimoAcesso: `Hoje, ${horaAtual()}` });
+       sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(conta.perfil));
       return { ok: true };
     },
     [contas],
@@ -269,6 +284,7 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
         { email: novoPerfil.email, senha: dados.senha, perfil: novoPerfil },
       ]);
       setPerfil(novoPerfil);
+       sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(novoPerfil));
       return { ok: true };
     },
     [contas],
