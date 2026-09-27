@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Bell, Bus, Search } from "lucide-react";
+import { ArrowRight, Bell, Bus, MapPin, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 

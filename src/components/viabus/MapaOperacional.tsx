@@ -208,7 +208,7 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         const veiculo = veiculos.find((v) => detalhe.titulo === `Ônibus ${v.codigo}`);
         const rota = linhas.find((item) => item.codigo === veiculo?.linhaCodigo);
         const caminho = rota?.paradas.map((p) => COORDENADAS_LOCAIS[p]).filter((p): p is CoordenadaMapa => Boolean(p)) ?? [];
-        if (caminho.length > 1) L.polyline(caminho.map((p) => [p.lat, p.lng]), { color: corToken("--primary", "#2563eb"), weight: 5 }).addTo(camadas);
+        if (caminho.length > 1) L.polyline(caminho.map((p): [number, number] => [p.lat, p.lng]), { color: corToken("--primary", "#2563eb"), weight: 5 }).addTo(camadas);
       }
       return;
     }
