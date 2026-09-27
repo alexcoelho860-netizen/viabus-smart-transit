@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Bell, Bus, Clock, Heart, MapPin, Search } from "lucide-react";
+import { ArrowRight, Bell, Bus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { ALERTAS, LINHAS, PARADAS } from "@/data/mock";
 import { useViaBus } from "@/store/viabus-store";
 import { BadgeLotacao, SeloAtualizacao } from "@/components/viabus/ui-bits";
+import { RouteCard } from "@/components/viabus/RouteCard";
+import { nomeRotaPorCodigo } from "@/lib/viabus-display";
 
 export const Route = createFileRoute("/passageiro/")({
   head: () => ({
@@ -16,7 +18,7 @@ export const Route = createFileRoute("/passageiro/")({
       { title: "Minhas viagens — ViaBus Passageiro" },
       { name: "description", content: "Veja o próximo ônibus, a lotação, seus favoritos e os alertas da sua região no ViaBus." },
       { property: "og:title", content: "Minhas viagens — ViaBus Passageiro" },
-      { property: "og:description", content: "Próximo ônibus em rota demonstrativa, tempo de chegada, lotação e alertas da região." },
+       { property: "og:description", content: "Próximo ônibus, tempo de chegada, lotação e alertas da região de Curitiba." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -78,7 +80,7 @@ function Pagina() {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Ex.: Praça Rui Barbosa" className="h-11 rounded-xl pl-9" />
           </div>
-          <Button className="h-11 rounded-xl px-5" onClick={() => toast.success(destino ? `Buscando rotas até ${destino}` : "Digite um destino para buscar", { description: destino ? "Melhor opção: rota demonstrativa RD-01, 4 min de espera." : undefined })}>Buscar</Button>
+           <Button className="h-11 rounded-xl px-5" onClick={() => { if (!destino.trim()) { toast.info("Digite um destino para buscar."); return; } document.getElementById("rotas-encontradas")?.scrollIntoView({ behavior: "smooth" }); toast.success(`Rotas para ${destino}`, { description: "Confira as opções e o itinerário abaixo." }); }}>Buscar</Button>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {PARADAS.slice(0, 4).map((p) => (
@@ -94,7 +96,7 @@ function Pagina() {
             <SeloAtualizacao />
           </div>
           <div className="mt-4 flex items-center gap-3">
-            <span className="grid size-14 place-items-center rounded-2xl bg-primary text-xl font-extrabold">{linha203.codigo}</span>
+             <span className="grid size-14 place-items-center rounded-lg bg-primary text-xl font-extrabold"><Bus className="size-7"/></span>
             <div>
               <p className="font-bold">{linha203.origem} → {linha203.destino}</p>
               <p className="text-sm text-white/60">Veículo {proximo.codigo} · {proximo.velocidadeKmh} km/h</p>
@@ -115,26 +117,13 @@ function Pagina() {
         </div>
       </Card>
 
-      <section>
+       <section id="rotas-encontradas">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold">Linhas favoritas</h2>
           <Link to="/passageiro/favoritos" className="text-sm font-semibold text-primary">Ver todas</Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {LINHAS.filter((l) => favoritos.includes(l.codigo)).map((l) => (
-            <Card key={l.id} className="gap-0 rounded-2xl border-border/70 p-4 shadow-soft">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-11 place-items-center rounded-xl text-sm font-extrabold text-white" style={{ backgroundColor: l.cor }}>{l.codigo}</span>
-                  <div><p className="font-bold">{l.nome}</p><p className="text-xs text-muted-foreground">a cada {l.intervaloMin} min</p></div>
-                </div>
-                <button onClick={() => { alternarFavorito(l.codigo); toast("Linha removida dos favoritos"); }} aria-label="Remover dos favoritos">
-                  <Heart className="size-5 fill-danger text-danger" />
-                </button>
-              </div>
-              <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Clock className="size-4" /> atraso médio de {l.atrasoMedioMin} min</p>
-            </Card>
-          ))}
+           {LINHAS.filter((l) => favoritos.includes(l.codigo)).map((l) => <RouteCard key={l.id} linha={l} favorita aoFavoritar={() => alternarFavorito(l.codigo)} compacta />)}
         </div>
       </section>
 
@@ -146,7 +135,7 @@ function Pagina() {
               <div className="flex items-center gap-3">
                 <span className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary"><Bus className="size-5" /></span>
                 <div>
-                  <p className="text-sm font-bold">Linha {v.linhaCodigo} · {v.codigo}</p>
+                   <p className="text-sm font-bold">{nomeRotaPorCodigo(v.linhaCodigo, LINHAS)} · {v.codigo}</p>
                   <p className="text-xs text-muted-foreground">{v.velocidadeKmh} km/h · atraso {v.atrasoMin} min</p>
                 </div>
               </div>
