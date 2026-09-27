@@ -1,8 +1,12 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
+
+.viabus-marker { background: transparent; border: 0; }
+.viabus-marker span { display: grid; width: 28px; height: 28px; place-items: center; border: 2px solid var(--card); border-radius: 50%; color: var(--card); font-size: 14px; font-weight: 800; box-shadow: 0 2px 7px oklch(0 0 0 / 0.24); }
 
 /*
  * Design system definition.

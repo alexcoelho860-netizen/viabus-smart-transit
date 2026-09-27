@@ -1,5 +1,6 @@
 /// <reference types="google.maps" />
 import { useEffect, useMemo, useRef, useState } from "react";
+import type * as Leaflet from "leaflet";
 import {
   AlertTriangle,
   Ban,
@@ -103,6 +104,11 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
   const mapa = useRef<google.maps.Map | null>(null);
   const elementos = useRef<Array<google.maps.Marker | google.maps.Polyline>>([]);
   const marcadorUsuario = useRef<google.maps.Marker | null>(null);
+  const mapaAlternativo = useRef<Leaflet.Map | null>(null);
+  const leaflet = useRef<typeof Leaflet | null>(null);
+  const camadaAlternativa = useRef<Leaflet.LayerGroup | null>(null);
+  const marcadorUsuarioAlternativo = useRef<Leaflet.CircleMarker | null>(null);
+  const [provedor, setProvedor] = useState<"google" | "alternativo" | null>(null);
   const [ativas, setAtivas] = useState<Camada[]>(["onibus", "paradas", "transito", "ocorrencias"]);
   const [situacao, setSituacao] = useState<Situacao>("todos");
   const [detalhe, setDetalhe] = useState<DetalheMapa | null>(null);
@@ -137,16 +143,76 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
           styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
         });
         mapa.current.addListener("click", () => setDetalhe(null));
+        setProvedor("google");
         setMapaPronto(true);
       })
-      .catch(() => ativo && setErroMapa("O mapa não pôde ser carregado agora."));
+      .catch(async () => {
+        if (!ativo || !elementoMapa.current) return;
+        try {
+          const L = await import("leaflet");
+          if (!ativo || !elementoMapa.current) return;
+          leaflet.current = L;
+          const alternativo = L.map(elementoMapa.current, { zoomControl: false, attributionControl: true }).setView([CENTRO_CURITIBA.lat, CENTRO_CURITIBA.lng], 12);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(alternativo);
+          mapaAlternativo.current = alternativo;
+          camadaAlternativa.current = L.layerGroup().addTo(alternativo);
+          alternativo.on("click", () => setDetalhe(null));
+          setProvedor("alternativo");
+          setMapaPronto(true);
+        } catch {
+          if (ativo) setErroMapa("O mapa não pôde ser carregado agora.");
+        }
+      });
     return () => {
       ativo = false;
+      mapaAlternativo.current?.remove();
+      mapaAlternativo.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (!mapaPronto || !mapa.current) return;
+    if (!mapaPronto || !provedor) return;
+    if (provedor === "alternativo" && leaflet.current && mapaAlternativo.current && camadaAlternativa.current) {
+      const L = leaflet.current;
+      const camadas = camadaAlternativa.current;
+      camadas.clearLayers();
+      const adicionarAlternativo = (posicao: CoordenadaMapa, cor: string, titulo: string, aoClicar: () => void, simbolo: string) => {
+        const marcador = L.marker([posicao.lat, posicao.lng], {
+          title: titulo,
+          icon: L.divIcon({ className: "viabus-marker", html: `<span style="background:${cor}">${simbolo}</span>`, iconSize: [28, 28], iconAnchor: [14, 14] }),
+        });
+        marcador.on("click", (e) => { L.DomEvent.stopPropagation(e); aoClicar(); });
+        marcador.addTo(camadas);
+      };
+      const corSucesso = corToken("--success", "#22c55e");
+      const corAlerta = corToken("--warning", "#f59e0b");
+      const corPerigo = corToken("--danger", "#ef4444");
+      if (ativas.includes("onibus")) veiculosVisiveis.forEach((v) => {
+        const posicao = COORDENADAS_VEICULOS[veiculos.findIndex((item) => item.id === v.id)] ?? CENTRO_CURITIBA;
+        const motorista = MOTORISTAS.find((m) => m.id === v.motoristaId);
+        adicionarAlternativo(posicao, ocorrenciasVisiveis.some((o) => o.veiculoCodigo === v.codigo) ? corPerigo : v.atrasoMin >= 5 ? corAlerta : corSucesso, `Ônibus ${v.codigo}`, () => {
+          mapaAlternativo.current?.panTo([posicao.lat, posicao.lng]);
+          setDetalhe({ tipo: "onibus", titulo: `Ônibus ${v.codigo}`, linhas: [nomeRotaPorCodigo(v.linhaCodigo, linhas), `Motorista: ${motorista?.nome ?? "Não informado"}`, `${v.velocidadeKmh} km/h · previsão em ${Math.max(2, v.atrasoMin + 2)} min`, `Atualizado há ${segundosDesdeAtualizacao}s`], posicao, lotacao: v.lotacao });
+        }, "🚌");
+      });
+      if (ativas.includes("paradas")) PARADAS.forEach((p) => {
+        const posicao = COORDENADAS_LOCAIS[p.nome];
+        if (posicao) adicionarAlternativo(posicao, corToken("--brand-ink", "#0f172a"), p.nome, () => setDetalhe({ tipo: "parada", titulo: p.nome, linhas: [p.endereco, ...rotasPorCodigos(p.linhas, linhas), p.abrigo ? "Ponto com abrigo" : "Ponto sem abrigo"], posicao }), "•");
+      });
+      if (ativas.includes("transito")) TRANSITO_SIMULADO.forEach((t) => adicionarAlternativo(t.posicao, corAlerta, `Trânsito em ${t.via}`, () => setDetalhe({ tipo: "transito", titulo: `Trânsito ${t.nivel.toLowerCase()}`, linhas: [t.via, "Condição simulada para avaliação do produto"], posicao: t.posicao }), "!") );
+      if (ativas.includes("ocorrencias")) ocorrenciasVisiveis.forEach((o) => {
+        const posicao = COORDENADAS_OCORRENCIAS[ocorrencias.findIndex((item) => item.id === o.id)] ?? COORDENADAS_VEICULOS[veiculos.findIndex((v) => v.codigo === o.veiculoCodigo)] ?? CENTRO_CURITIBA;
+        adicionarAlternativo(posicao, corPerigo, ROTULO_TIPO[o.tipo], () => setDetalhe({ tipo: "ocorrencia", titulo: ROTULO_TIPO[o.tipo], linhas: [o.local, `${o.registradaEm} · Veículo ${o.veiculoCodigo}`, nomeRotaPorCodigo(o.linhaCodigo, linhas), `Status: ${o.status.replaceAll("_", " ")}`], posicao, gravidade: o.gravidade }), "!");
+      });
+      if (detalhe?.tipo === "onibus") {
+        const veiculo = veiculos.find((v) => detalhe.titulo === `Ônibus ${v.codigo}`);
+        const rota = linhas.find((item) => item.codigo === veiculo?.linhaCodigo);
+        const caminho = rota?.paradas.map((p) => COORDENADAS_LOCAIS[p]).filter((p): p is CoordenadaMapa => Boolean(p)) ?? [];
+        if (caminho.length > 1) L.polyline(caminho.map((p) => [p.lat, p.lng]), { color: corToken("--primary", "#2563eb"), weight: 5 }).addTo(camadas);
+      }
+      return;
+    }
+    if (!mapa.current) return;
     elementos.current.forEach((item) => item.setMap(null));
     elementos.current = [];
     const adicionar = (posicao: CoordenadaMapa, cor: string, rotulo: string, aoClicar: () => void, forma?: google.maps.SymbolPath) => {
@@ -245,7 +311,7 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         }
       }
     }
-  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, ocorrencias, ocorrenciasVisiveis, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
+  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, provedor, ocorrencias, ocorrenciasVisiveis, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
 
   function alternar(camada: Camada) {
     setAtivas((atual) => atual.includes(camada) ? atual.filter((item) => item !== camada) : [...atual, camada]);
@@ -262,8 +328,13 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
       const posicao = { lat: coords.latitude, lng: coords.longitude };
       mapa.current?.panTo(posicao);
       mapa.current?.setZoom(15);
+      mapaAlternativo.current?.setView([posicao.lat, posicao.lng], 15);
       marcadorUsuario.current?.setMap(null);
-      marcadorUsuario.current = new google.maps.Marker({ map: mapa.current, position: posicao, title: "Sua localização" });
+      if (mapa.current) marcadorUsuario.current = new google.maps.Marker({ map: mapa.current, position: posicao, title: "Sua localização" });
+      if (mapaAlternativo.current && leaflet.current) {
+        marcadorUsuarioAlternativo.current?.remove();
+        marcadorUsuarioAlternativo.current = leaflet.current.circleMarker([posicao.lat, posicao.lng], { radius: 8, color: corToken("--primary", "#2563eb"), fillOpacity: 0.8 }).addTo(mapaAlternativo.current);
+      }
       setLocalizando(false);
     }, () => {
       setErroLocalizacao("Localização não disponível. Verifique a permissão do navegador.");
@@ -305,9 +376,9 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         {erroMapa && <div className="absolute inset-0 grid place-items-center bg-muted p-6 text-center"><div><AlertTriangle className="mx-auto size-8 text-warning"/><p className="mt-3 font-semibold">{erroMapa}</p><Button className="mt-4" variant="outline" onClick={() => window.location.reload()}>Tentar novamente</Button></div></div>}
 
         <div className="absolute right-3 top-3 flex flex-col gap-2">
-          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Aumentar zoom" onClick={() => mapa.current?.setZoom((mapa.current.getZoom() ?? 12) + 1)}><Plus /></Button>
-          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Diminuir zoom" onClick={() => mapa.current?.setZoom((mapa.current.getZoom() ?? 12) - 1)}><Minus /></Button>
-          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Centralizar em Curitiba" onClick={() => { mapa.current?.panTo(CENTRO_CURITIBA); mapa.current?.setZoom(12); }}><Crosshair /></Button>
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Aumentar zoom" onClick={() => { mapa.current?.setZoom((mapa.current.getZoom() ?? 12) + 1); mapaAlternativo.current?.zoomIn(); }}><Plus /></Button>
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Diminuir zoom" onClick={() => { mapa.current?.setZoom((mapa.current.getZoom() ?? 12) - 1); mapaAlternativo.current?.zoomOut(); }}><Minus /></Button>
+          <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Centralizar em Curitiba" onClick={() => { mapa.current?.panTo(CENTRO_CURITIBA); mapa.current?.setZoom(12); mapaAlternativo.current?.setView([CENTRO_CURITIBA.lat, CENTRO_CURITIBA.lng], 12); }}><Crosshair /></Button>
           <Button size="icon" variant="secondary" className="shadow-lift" aria-label="Usar minha localização" disabled={localizando} onClick={localizar}><LocateFixed /></Button>
         </div>
 
