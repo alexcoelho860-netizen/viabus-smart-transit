@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import { LINHAS } from "@/data/mock";
 import { useViaBus } from "@/store/viabus-store";
 import { TituloPagina } from "@/components/viabus/ui-bits";
 import { RouteCard } from "@/components/viabus/RouteCard";
@@ -12,7 +11,7 @@ export const Route = createFileRoute("/passageiro/linhas")({
   head: () => ({
     meta: [
       { title: "Linhas de ônibus — ViaBus" },
-      { name: "description", content: "Consulte itinerário, intervalo, tarifa e atraso médio das linhas 203, 205, 301 e 405." },
+      { name: "description", content: "Compare trajetos demonstrativos, itinerários, intervalos e tarifas em Curitiba e região." },
       { property: "og:title", content: "Linhas de ônibus — ViaBus" },
       { property: "og:description", content: "Itinerários completos, intervalos e atrasos médios das linhas urbanas." },
       { property: "og:type", content: "website" },
@@ -23,9 +22,9 @@ export const Route = createFileRoute("/passageiro/linhas")({
 });
 
 function Pagina() {
-  const { favoritos, alternarFavorito } = useViaBus();
+  const { favoritos, alternarFavorito, linhas } = useViaBus();
   const [busca, setBusca] = useState("");
-  const lista = LINHAS.filter((l) => `${l.codigo} ${l.nome} ${l.origem} ${l.destino}`.toLowerCase().includes(busca.toLowerCase()));
+  const lista = linhas.filter((l) => `${l.codigo} ${l.nome} ${l.origem} ${l.destino}`.toLowerCase().includes(busca.toLowerCase()));
 
   return (
     <div className="space-y-5">

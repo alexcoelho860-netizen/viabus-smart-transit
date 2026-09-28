@@ -32,6 +32,8 @@ export const Route = createFileRoute("/")({
         content:
           "Acompanhe ônibus ao vivo, registre ocorrências da frota e gerencie a operação com indicadores executivos.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Landing,
@@ -155,9 +157,7 @@ function Landing() {
                 </span>
               </div>
               <div className="mt-4 flex items-center gap-3">
-                <span className="grid size-14 place-items-center rounded-2xl bg-primary text-xl font-extrabold">
-                  RD-01
-                </span>
+                <span className="grid size-14 place-items-center rounded-2xl bg-primary"><Bus className="size-7" /></span>
                 <div>
                   <p className="font-bold">Terminal do Cabral → Praça Rui Barbosa</p>
                   <p className="text-sm text-white/60">Veículo VB-1001 · movimento moderado</p>
