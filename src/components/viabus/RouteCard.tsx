@@ -12,11 +12,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MapaOperacional } from "@/components/viabus/MapaOperacional";
+import { COORDENADAS_LOCAIS } from "@/data/map-data";
 import { nomeRota } from "@/lib/viabus-display";
 import { cn } from "@/lib/utils";
 import type { Linha } from "@/types/viabus";
 
 export function RouteCard({ linha, favorita, aoFavoritar, compacta = false }: { linha: Linha; favorita: boolean; aoFavoritar: () => void; compacta?: boolean }) {
+  const pontos = linha.paradas.map((parada) => COORDENADAS_LOCAIS[parada]).filter((p) => p !== undefined);
+  const distancia = pontos.slice(1).reduce((total, atual, indice) => {
+    const anterior = pontos[indice];
+    if (!anterior) return total;
+    const radianos = Math.PI / 180;
+    const angulo = Math.sin((atual.lat - anterior.lat) * radianos / 2) ** 2 + Math.cos(anterior.lat * radianos) * Math.cos(atual.lat * radianos) * Math.sin((atual.lng - anterior.lng) * radianos / 2) ** 2;
+    return total + 6371 * 2 * Math.asin(Math.sqrt(angulo));
+  }, 0);
   function favoritar() {
     aoFavoritar();
     toast.success(favorita ? "Rota removida dos favoritos" : "Rota salva nos favoritos");
@@ -43,8 +52,8 @@ export function RouteCard({ linha, favorita, aoFavoritar, compacta = false }: { 
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader><DialogTitle>{nomeRota(linha)}</DialogTitle><DialogDescription>{linha.origem} até {linha.destino} · aproximadamente {Math.max(24, linha.paradas.length * 6)} min</DialogDescription></DialogHeader>
         <div className="grid gap-5 md:grid-cols-[1.1fr_.9fr]">
-          <MapaOperacional altura="h-[320px]" compacto />
-          <div><div className="grid grid-cols-2 gap-2"><div className="rounded-lg bg-muted p-3"><p className="text-xs text-muted-foreground">Operação</p><p className="font-bold">{linha.ativa ? "Em circulação" : "Temporariamente suspensa"}</p></div><div className="rounded-lg bg-muted p-3"><p className="text-xs text-muted-foreground">Viagens previstas</p><p className="font-bold">{linha.viagensDia} ao dia</p></div></div>
+          <MapaOperacional altura="h-[320px]" compacto rotaDestacada={linha} />
+          <div><div className="grid grid-cols-2 gap-2"><div className="rounded-lg bg-muted p-3"><p className="text-xs text-muted-foreground">Operação</p><p className="font-bold">{linha.ativa ? "Em circulação" : "Temporariamente suspensa"}</p></div><div className="rounded-lg bg-muted p-3"><p className="text-xs text-muted-foreground">Distância aproximada</p><p className="font-bold">{distancia.toFixed(1).replace(".", ",")} km</p></div></div>
           <ol className="mt-4">{linha.paradas.map((parada, indice) => <li key={parada} className="flex gap-3"><div className="flex flex-col items-center"><span className="grid size-7 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">{indice + 1}</span>{indice < linha.paradas.length - 1 && <span className="h-9 w-px bg-primary/30" />}</div><div><p className="text-sm font-medium">{parada}</p><p className="text-xs text-muted-foreground">Previsão: {indice * 6 + 2} min</p></div></li>)}</ol></div>
         </div>
         <p className="text-xs text-muted-foreground">Itinerário e tarifa simulados sobre localidades reais; não representam uma linha oficial.</p>

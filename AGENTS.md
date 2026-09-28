@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Preserve ViaBus's centralized demonstration store and role-specific routes until a real backend is explicitly enabled; these simulated identities do not provide security enforcement.
+- Render geographic Curitiba maps through Google Maps when authorized and Leaflet/OpenStreetMap otherwise; the fallback keeps geographic context without an API key.
+- Keep route IDs internal and derive public route names from shared display helpers, because demonstration identifiers are not official transit line numbers.

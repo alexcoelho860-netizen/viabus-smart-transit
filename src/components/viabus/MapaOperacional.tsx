@@ -28,6 +28,7 @@ import {
 } from "@/data/map-data";
 import { nomeRotaPorCodigo, rotasPorCodigos } from "@/lib/viabus-display";
 import { cn } from "@/lib/utils";
+import type { Linha } from "@/types/viabus";
 import { useViaBus } from "@/store/viabus-store";
 import { BadgeGravidade, BadgeLotacao, SeloAtualizacao } from "@/components/viabus/ui-bits";
 
@@ -72,7 +73,7 @@ function carregarGoogleMaps() {
   carregamentoMapa = new Promise<void>((resolve, reject) => {
     const callback = `initViaBusMap_${Date.now()}`;
     const janela = window as unknown as Window & Record<string, unknown>;
-    janela.gm_authFailure = () => window.dispatchEvent(new Event("viabus-map-unavailable"));
+    janela["gm_authFailure"] = () => window.dispatchEvent(new Event("viabus-map-unavailable"));
     janela[callback] = () => {
       delete janela[callback];
       resolve();
@@ -99,7 +100,7 @@ function iconeOcorrencia(tipo: string) {
   return AlertTriangle;
 }
 
-export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { altura?: string; compacto?: boolean }) {
+export function MapaOperacional({ altura = "h-[460px]", compacto = false, rotaDestacada }: { altura?: string; compacto?: boolean; rotaDestacada?: Linha }) {
   const { veiculos, linhas, ocorrencias, segundosDesdeAtualizacao } = useViaBus();
   const elementoMapa = useRef<HTMLDivElement>(null);
   const mapa = useRef<google.maps.Map | null>(null);
@@ -149,6 +150,7 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         alternativo.on("click", () => setDetalhe(null));
         setProvedor("alternativo");
         setMapaPronto(true);
+        window.setTimeout(() => { if (ativo) alternativo.invalidateSize(); }, 100);
       } catch {
         if (ativo) setErroMapa("O mapa não pôde ser carregado agora.");
       }
@@ -212,7 +214,14 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         const posicao = COORDENADAS_OCORRENCIAS[ocorrencias.findIndex((item) => item.id === o.id)] ?? COORDENADAS_VEICULOS[veiculos.findIndex((v) => v.codigo === o.veiculoCodigo)] ?? CENTRO_CURITIBA;
         adicionarAlternativo(posicao, corPerigo, ROTULO_TIPO[o.tipo], () => setDetalhe({ tipo: "ocorrencia", titulo: ROTULO_TIPO[o.tipo], linhas: [o.local, `${o.registradaEm} · Veículo ${o.veiculoCodigo}`, nomeRotaPorCodigo(o.linhaCodigo, linhas), `Status: ${o.status.replaceAll("_", " ")}`], posicao, gravidade: o.gravidade }), "!");
       });
-      if (detalhe?.tipo === "onibus") {
+      if (rotaDestacada) {
+        const caminho = rotaDestacada.paradas.map((p) => COORDENADAS_LOCAIS[p]).filter((p): p is CoordenadaMapa => Boolean(p));
+        if (caminho.length > 1) {
+          const coordenadas = caminho.map((p): [number, number] => [p.lat, p.lng]);
+          L.polyline(coordenadas, { color: corToken("--primary", "#2563eb"), weight: 5 }).addTo(camadas);
+          mapaAlternativo.current.fitBounds(L.latLngBounds(coordenadas), { padding: [24, 24], maxZoom: 13 });
+        }
+      } else if (detalhe?.tipo === "onibus") {
         const veiculo = veiculos.find((v) => detalhe.titulo === `Ônibus ${v.codigo}`);
         const rota = linhas.find((item) => item.codigo === veiculo?.linhaCodigo);
         const caminho = rota?.paradas.map((p) => COORDENADAS_LOCAIS[p]).filter((p): p is CoordenadaMapa => Boolean(p)) ?? [];
@@ -308,7 +317,15 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
       });
     }
 
-    if (detalhe?.tipo === "onibus") {
+    if (rotaDestacada) {
+      const caminho = rotaDestacada.paradas.map((p) => COORDENADAS_LOCAIS[p]).filter((p): p is CoordenadaMapa => Boolean(p));
+      if (caminho.length > 1) {
+        elementos.current.push(new google.maps.Polyline({ map: mapa.current, path: caminho, strokeColor: corPrimaria, strokeOpacity: 0.85, strokeWeight: 5 }));
+        const limites = new google.maps.LatLngBounds();
+        caminho.forEach((p) => limites.extend(p));
+        mapa.current.fitBounds(limites, 24);
+      }
+    } else if (detalhe?.tipo === "onibus") {
       const linha = veiculos.find((v) => detalhe.titulo.includes(v.codigo));
       const rota = linhas.find((item) => item.codigo === linha?.linhaCodigo);
       if (rota) {
@@ -319,7 +336,7 @@ export function MapaOperacional({ altura = "h-[460px]", compacto = false }: { al
         }
       }
     }
-  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, provedor, ocorrencias, ocorrenciasVisiveis, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
+  }, [ativas, detalhe?.tipo, detalhe?.titulo, linhas, mapaPronto, provedor, ocorrencias, ocorrenciasVisiveis, rotaDestacada, segundosDesdeAtualizacao, veiculos, veiculosVisiveis]);
 
   function alternar(camada: Camada) {
     setAtivas((atual) => atual.includes(camada) ? atual.filter((item) => item !== camada) : [...atual, camada]);
