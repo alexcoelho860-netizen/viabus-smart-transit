@@ -72,7 +72,7 @@ function carregarGoogleMaps() {
   carregamentoMapa = new Promise<void>((resolve, reject) => {
     const callback = `initViaBusMap_${Date.now()}`;
     const janela = window as unknown as Window & Record<string, unknown>;
-    janela.gm_authFailure = () => window.dispatchEvent(new Event("viabus-map-unavailable"));
+    janela["gm_authFailure"] = () => window.dispatchEvent(new Event("viabus-map-unavailable"));
     janela[callback] = () => {
       delete janela[callback];
       resolve();
