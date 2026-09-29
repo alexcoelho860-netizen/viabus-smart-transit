@@ -47,6 +47,7 @@ import type {
   UserRole,
   Veiculo,
 } from "@/types/viabus";
+import { supabase } from "@/integrations/supabase/client";
 
 void _BANNERS;
 
@@ -71,17 +72,18 @@ export type Tema = "claro" | "escuro" | "sistema";
 interface Resultado {
   ok: boolean;
   erro?: string;
+  confirmacao?: boolean;
 }
 
 interface ViaBusContexto {
   // Sessão
   perfil: UserProfile | null;
   contas: Conta[];
-  entrar: (email: string, senha: string) => Resultado;
-  cadastrar: (dados: DadosCadastro) => Resultado;
-  recuperarSenha: (email: string) => Resultado;
+  entrar: (email: string, senha: string) => Promise<Resultado>;
+  cadastrar: (dados: DadosCadastro) => Promise<Resultado>;
+  recuperarSenha: (email: string) => Promise<Resultado>;
   entrarComo: (role: UserRole) => void;
-  sair: () => void;
+  sair: () => Promise<void>;
   atualizarPerfil: (dados: Partial<UserProfile>) => void;
   temPermissao: (role: UserRole) => boolean;
 
@@ -163,6 +165,7 @@ function iniciais(nome: string) {
 
 export function ViaBusProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<UserProfile | null>(null);
+  const [contaReal, setContaReal] = useState(false);
   const [contas, setContas] = useState<Conta[]>(CONTAS_INICIAIS);
   const [veiculos, setVeiculos] = useState<Veiculo[]>(VEICULOS);
   const [linhas, setLinhas] = useState<Linha[]>(LINHAS);
@@ -182,19 +185,39 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
   const [sequencia, setSequencia] = useState(482);
   const [segundosDesdeAtualizacao, setSegundos] = useState(0);
 
-  // A sessão demonstrativa vive apenas nesta aba. Nenhuma permissão real depende deste armazenamento.
+  // Contas demonstrativas só dão acesso a dados simulados; sessões reais são validadas pelo serviço de autenticação.
   useEffect(() => {
+    let ativo = true;
+    const carregarConta = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!ativo || !user) return;
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (!ativo || !roles?.some((r) => r.role === "user")) return;
+      const { data: dados } = await supabase.from("profiles").select("name,phone,created_at").eq("user_id", user.id).maybeSingle();
+      if (!ativo) return;
+      const nome = dados?.name || String(user.user_metadata?.name ?? "Passageiro");
+      setContaReal(true);
+      setPerfil({ id: user.id, nome, email: user.email ?? "", role: "passageiro", avatarIniciais: iniciais(nome), telefone: dados?.phone ?? "", desde: dados?.created_at ? new Date(dados.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "Hoje", status: "ativo" });
+      // A ficha é criada após confirmação de e-mail, quando a sessão passa a existir.
+      if (!dados) await supabase.from("profiles").upsert({ user_id: user.id, name: nome, phone: String(user.user_metadata?.phone ?? "") });
+    };
     try {
       const salvo = sessionStorage.getItem("viabus-demo-perfil");
       if (salvo) {
         const usuario = JSON.parse(salvo) as UserProfile;
-        if (["passageiro", "motorista", "fiscal", "admin"].includes(usuario.role)) setPerfil(usuario);
+        if (usuario.role in PERFIS && usuario.id === PERFIS[usuario.role]?.id) setPerfil(PERFIS[usuario.role]);
       }
     } catch { sessionStorage.removeItem("viabus-demo-perfil"); }
+    void carregarConta();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") setTimeout(() => void carregarConta(), 0);
+      if (event === "SIGNED_OUT" && ativo) { setContaReal(false); setPerfil(null); }
+    });
+    return () => { ativo = false; subscription.unsubscribe(); };
   }, []);
   useEffect(() => {
-    if (perfil) sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(perfil));
-  }, [perfil]);
+    if (perfil && !contaReal && PERFIS[perfil.role]?.id === perfil.id) sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(perfil));
+  }, [perfil, contaReal]);
 
   // Simulação de tempo real: movimenta a frota e renova o selo "Atualizado agora".
   useEffect(() => {
@@ -247,56 +270,47 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const entrarComo = useCallback((role: UserRole) => { sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, []);
-  const sair = useCallback(() => { sessionStorage.removeItem("viabus-demo-perfil"); setPerfil(null); }, []);
+  const entrarComo = useCallback((role: UserRole) => { void supabase.auth.signOut(); setContaReal(false); sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, []);
+  const sair = useCallback(async () => { sessionStorage.removeItem("viabus-demo-perfil"); if (contaReal) await supabase.auth.signOut(); setContaReal(false); setPerfil(null); }, [contaReal]);
 
   const entrar = useCallback(
-    (email: string, senha: string): Resultado => {
-      const conta = contas.find((c) => c.email.toLowerCase() === email.trim().toLowerCase());
-      if (!conta) return { ok: false, erro: "Não conseguimos encontrar uma conta com esses dados." };
-      if (conta.senha !== senha) return { ok: false, erro: "Senha incorreta. Tente novamente." };
-      setPerfil({ ...conta.perfil, ultimoAcesso: `Hoje, ${horaAtual()}` });
-       sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(conta.perfil));
+    async (email: string, senha: string): Promise<Resultado> => {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
+      if (error || !data.user) return { ok: false, erro: "E-mail ou senha inválidos, ou confirmação pendente." };
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+      if (!roles?.some((r) => r.role === "user")) { await supabase.auth.signOut(); return { ok: false, erro: "Esta conta não tem acesso de passageiro." }; }
+      sessionStorage.removeItem("viabus-demo-perfil");
+      const { data: dados } = await supabase.from("profiles").select("name,phone,created_at").eq("user_id", data.user.id).maybeSingle();
+      const nome = dados?.name || String(data.user.user_metadata?.name ?? "Passageiro");
+      setContaReal(true);
+      setPerfil({ id: data.user.id, nome, email: data.user.email ?? email, role: "passageiro", avatarIniciais: iniciais(nome), telefone: dados?.phone ?? "", desde: dados?.created_at ? new Date(dados.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "Hoje", status: "ativo" });
+      if (!dados) await supabase.from("profiles").upsert({ user_id: data.user.id, name: nome, phone: String(data.user.user_metadata?.phone ?? "") });
       return { ok: true };
     },
-    [contas],
+    [],
   );
 
   const cadastrar = useCallback(
-    (dados: DadosCadastro): Resultado => {
-      const existe = contas.some(
-        (c) => c.email.toLowerCase() === dados.email.trim().toLowerCase(),
-      );
-      if (existe) return { ok: false, erro: "Já existe uma conta com este e-mail." };
-      const novoPerfil: UserProfile = {
-        id: `usr-${Date.now()}`,
-        nome: dados.nome.trim(),
-        email: dados.email.trim().toLowerCase(),
-        role: dados.role,
-        avatarIniciais: iniciais(dados.nome),
-        telefone: dados.telefone,
-        desde: dataAtual(),
-        ultimoAcesso: `Hoje, ${horaAtual()}`,
-        status: "ativo",
-      };
-      setContas((atual) => [
-        ...atual,
-        { email: novoPerfil.email, senha: dados.senha, perfil: novoPerfil },
-      ]);
-      setPerfil(novoPerfil);
-       sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(novoPerfil));
-      return { ok: true };
+    async (dados: DadosCadastro): Promise<Resultado> => {
+      if (dados.role !== "passageiro") return { ok: false, erro: "O cadastro público está disponível apenas para passageiros." };
+      const { data, error } = await supabase.auth.signUp({ email: dados.email.trim(), password: dados.senha, options: { data: { name: dados.nome.trim(), phone: dados.telefone }, emailRedirectTo: `${window.location.origin}/login` } });
+      if (error || !data.user) return { ok: false, erro: error?.message ?? "Não foi possível criar sua conta." };
+      if (!data.session) return { ok: true, confirmacao: true };
+      sessionStorage.removeItem("viabus-demo-perfil");
+      setContaReal(true);
+      setPerfil({ id: data.user.id, nome: dados.nome.trim(), email: data.user.email ?? dados.email, role: "passageiro", avatarIniciais: iniciais(dados.nome), telefone: dados.telefone, desde: "Hoje", status: "ativo" });
+      await supabase.from("profiles").upsert({ user_id: data.user.id, name: dados.nome.trim(), phone: dados.telefone });
+      return { ok: true, confirmacao: false };
     },
-    [contas],
+    [],
   );
 
   const recuperarSenha = useCallback(
-    (email: string): Resultado => {
-      const existe = contas.some((c) => c.email.toLowerCase() === email.trim().toLowerCase());
-      if (!existe) return { ok: false, erro: "Não conseguimos encontrar uma conta com esse e-mail." };
-      return { ok: true };
+    async (email: string): Promise<Resultado> => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/recuperar-senha` });
+      return error ? { ok: false, erro: error.message } : { ok: true };
     },
-    [contas],
+    [],
   );
 
   const atualizarPerfil = useCallback((dados: Partial<UserProfile>) => {
