@@ -45,7 +45,7 @@ function Pagina() {
           </div>
         ))}
       </Card>
-      <Button variant="outline" className="rounded-xl text-danger" onClick={() => { sair(); navigate({ to: "/demo" }); }}><LogOut className="size-4" /> Sair da conta</Button>
+      <Button variant="outline" className="rounded-xl text-danger" onClick={async () => { await sair(); navigate({ to: "/demo" }); }}><LogOut className="size-4" /> Sair da conta</Button>
     </div>
   );
 }
