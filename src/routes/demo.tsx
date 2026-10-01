@@ -78,8 +78,8 @@ function Demo() {
   const { entrarComo } = useViaBus();
   const navigate = useNavigate();
 
-  function entrar(opcao: (typeof OPCOES)[number]) {
-    entrarComo(opcao.role);
+  async function entrar(opcao: (typeof OPCOES)[number]) {
+    await entrarComo(opcao.role);
     toast.success(`Bem-vindo(a), ${opcao.pessoa.split("·")[0]?.trim() ?? opcao.pessoa}!`, {
       description: `Você entrou como ${opcao.titulo.toLowerCase()}.`,
     });

@@ -376,8 +376,8 @@ export function AppShell({ role, children }: { role: UserRole; children: ReactNo
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                sair();
+              onClick={async () => {
+                await sair();
                 navigate({ to: "/" });
               }}
             >

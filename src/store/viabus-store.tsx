@@ -82,7 +82,7 @@ interface ViaBusContexto {
   entrar: (email: string, senha: string) => Promise<Resultado>;
   cadastrar: (dados: DadosCadastro) => Promise<Resultado>;
   recuperarSenha: (email: string) => Promise<Resultado>;
-  entrarComo: (role: UserRole) => void;
+  entrarComo: (role: UserRole) => Promise<void>;
   sair: () => Promise<void>;
   atualizarPerfil: (dados: Partial<UserProfile>) => void;
   temPermissao: (role: UserRole) => boolean;
@@ -195,11 +195,11 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
       if (!ativo || !roles?.some((r) => r.role === "user")) return;
       const { data: dados } = await supabase.from("profiles").select("name,phone,created_at").eq("user_id", user.id).maybeSingle();
       if (!ativo) return;
-      const nome = dados?.name || String(user.user_metadata?.name ?? "Passageiro");
+      const nome = dados?.name || String(user.user_metadata?.['name'] ?? "Passageiro");
       setContaReal(true);
       setPerfil({ id: user.id, nome, email: user.email ?? "", role: "passageiro", avatarIniciais: iniciais(nome), telefone: dados?.phone ?? "", desde: dados?.created_at ? new Date(dados.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "Hoje", status: "ativo" });
       // A ficha é criada após confirmação de e-mail, quando a sessão passa a existir.
-      if (!dados) await supabase.from("profiles").upsert({ user_id: user.id, name: nome, phone: String(user.user_metadata?.phone ?? "") });
+      if (!dados) await supabase.from("profiles").upsert({ user_id: user.id, name: nome, phone: String(user.user_metadata?.['phone'] ?? "") });
     };
     try {
       const salvo = sessionStorage.getItem("viabus-demo-perfil");
@@ -211,7 +211,7 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
     void carregarConta();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") setTimeout(() => void carregarConta(), 0);
-      if (event === "SIGNED_OUT" && ativo) { setContaReal(false); setPerfil(null); }
+      if (event === "SIGNED_OUT" && ativo && !sessionStorage.getItem("viabus-demo-perfil")) { setContaReal(false); setPerfil(null); }
     });
     return () => { ativo = false; subscription.unsubscribe(); };
   }, []);
@@ -270,7 +270,7 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const entrarComo = useCallback((role: UserRole) => { void supabase.auth.signOut(); setContaReal(false); sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, []);
+  const entrarComo = useCallback(async (role: UserRole) => { await supabase.auth.signOut(); setContaReal(false); sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, []);
   const sair = useCallback(async () => { sessionStorage.removeItem("viabus-demo-perfil"); if (contaReal) await supabase.auth.signOut(); setContaReal(false); setPerfil(null); }, [contaReal]);
 
   const entrar = useCallback(
@@ -281,10 +281,10 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
       if (!roles?.some((r) => r.role === "user")) { await supabase.auth.signOut(); return { ok: false, erro: "Esta conta não tem acesso de passageiro." }; }
       sessionStorage.removeItem("viabus-demo-perfil");
       const { data: dados } = await supabase.from("profiles").select("name,phone,created_at").eq("user_id", data.user.id).maybeSingle();
-      const nome = dados?.name || String(data.user.user_metadata?.name ?? "Passageiro");
+      const nome = dados?.name || String(data.user.user_metadata?.['name'] ?? "Passageiro");
       setContaReal(true);
       setPerfil({ id: data.user.id, nome, email: data.user.email ?? email, role: "passageiro", avatarIniciais: iniciais(nome), telefone: dados?.phone ?? "", desde: dados?.created_at ? new Date(dados.created_at).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "Hoje", status: "ativo" });
-      if (!dados) await supabase.from("profiles").upsert({ user_id: data.user.id, name: nome, phone: String(data.user.user_metadata?.phone ?? "") });
+      if (!dados) await supabase.from("profiles").upsert({ user_id: data.user.id, name: nome, phone: String(data.user.user_metadata?.['phone'] ?? "") });
       return { ok: true };
     },
     [],
