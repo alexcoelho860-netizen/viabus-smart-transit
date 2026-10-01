@@ -270,7 +270,7 @@ export function ViaBusProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const entrarComo = useCallback(async (role: UserRole) => { await supabase.auth.signOut(); setContaReal(false); sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, []);
+  const entrarComo = useCallback(async (role: UserRole) => { if (contaReal) await supabase.auth.signOut(); setContaReal(false); sessionStorage.setItem("viabus-demo-perfil", JSON.stringify(PERFIS[role])); setPerfil(PERFIS[role]); }, [contaReal]);
   const sair = useCallback(async () => { sessionStorage.removeItem("viabus-demo-perfil"); if (contaReal) await supabase.auth.signOut(); setContaReal(false); setPerfil(null); }, [contaReal]);
 
   const entrar = useCallback(
