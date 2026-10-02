@@ -16,4 +16,4 @@
 - [x] Simplificar os cards de rotas, retirar códigos internos da apresentação e destacar itinerários no mapa
 - [x] Corrigir navegação sem sessão, busca mobile, notificações e controles de operação
 - [x] Validar perfis e mapa em computador e celular
-- [ ] Autenticação real, dados persistentes e recuperação por e-mail — depende da ativação do Lovable Cloud; o protótipo permanece demonstrativo
+- [x] Contas reais de passageiros, confirmação e recuperação por e-mail; os dados operacionais e os outros três perfis continuam demonstrativos

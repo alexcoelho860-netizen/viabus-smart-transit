@@ -63,6 +63,8 @@ let carregamentoMapa: Promise<void> | null = null;
 
 function carregarGoogleMaps() {
   if (typeof window === "undefined") return Promise.reject(new Error("Mapa indisponível no servidor"));
+  // A chave gerenciada aceita domínios de pré-visualização, não o servidor local.
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") return Promise.reject(new Error("Usar mapa alternativo local"));
   if (typeof google !== "undefined" && google.maps) return Promise.resolve();
   if (carregamentoMapa) return carregamentoMapa;
 
