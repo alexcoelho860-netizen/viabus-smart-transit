@@ -4,6 +4,8 @@ import { MapPin, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PARADAS } from "@/data/mock";
+import { useViaBus } from "@/store/viabus-store";
+import { nomeRotaPorCodigo } from "@/lib/viabus-display";
 import { TituloPagina } from "@/components/viabus/ui-bits";
 
 export const Route = createFileRoute("/passageiro/pontos")({
@@ -12,11 +14,14 @@ export const Route = createFileRoute("/passageiro/pontos")({
     { name: "description", content: "Encontre paradas próximas, endereços, linhas atendidas e próximas chegadas." },
     { property: "og:title", content: "Pontos e paradas — ViaBus" },
     { property: "og:description", content: "Paradas do transporte coletivo com linhas atendidas e chegadas previstas." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Pagina,
 });
 
 function Pagina() {
+  const { linhas } = useViaBus();
   const [busca, setBusca] = useState("");
   const lista = PARADAS.filter((p) => `${p.nome} ${p.endereco}`.toLowerCase().includes(busca.toLowerCase()));
   return (
@@ -36,8 +41,8 @@ function Pagina() {
             <div className="mt-4 space-y-2">
               {p.linhas.map((l, j) => (
                 <div key={l} className="flex items-center justify-between rounded-xl bg-muted px-3 py-2 text-sm">
-                  <span className="font-semibold">Linha {l}</span>
-                  <span className="text-muted-foreground">chega em {3 + i + j * 5} min</span>
+                  <span className="font-semibold">{nomeRotaPorCodigo(l, linhas)}</span>
+                  <span className="text-muted-foreground">previsão simulada: {3 + i + j * 5} min</span>
                 </div>
               ))}
             </div>
