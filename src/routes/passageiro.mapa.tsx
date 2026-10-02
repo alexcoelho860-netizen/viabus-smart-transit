@@ -5,15 +5,17 @@ import { TituloPagina } from "@/components/viabus/ui-bits";
 export const Route = createFileRoute("/passageiro/mapa")({
   head: () => ({
     meta: [
-      { title: "Mapa ao vivo — ViaBus Passageiro" },
-      { name: "description", content: "Acompanhe no mapa os ônibus em circulação, as paradas próximas e os pontos de trânsito lento." },
-      { property: "og:title", content: "Mapa ao vivo — ViaBus Passageiro" },
-      { property: "og:description", content: "Ônibus, paradas e trânsito em tempo real no mapa do ViaBus." },
+      { title: "Mapa de Curitiba — ViaBus Passageiro" },
+      { name: "description", content: "Explore Curitiba no mapa com posições simuladas de ônibus, paradas e trânsito." },
+      { property: "og:title", content: "Mapa de Curitiba — ViaBus Passageiro" },
+      { property: "og:description", content: "Mapa geográfico de Curitiba com dados operacionais simulados do ViaBus." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (
     <div className="space-y-5">
-      <TituloPagina titulo="Mapa ao vivo" subtitulo="Toque nos marcadores para ver detalhes de cada ônibus, parada ou ocorrência." />
+      <TituloPagina titulo="Mapa de Curitiba" subtitulo="Toque nos marcadores para ver detalhes de cada ônibus, parada ou ocorrência simulada." />
       <MapaOperacional altura="h-[70vh]" />
     </div>
   ),

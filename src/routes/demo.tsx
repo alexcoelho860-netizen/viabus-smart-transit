@@ -22,6 +22,8 @@ export const Route = createFileRoute("/demo")({
         property: "og:description",
         content: "Escolha um dos quatro perfis e explore a plataforma de transporte coletivo ViaBus.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Demo,

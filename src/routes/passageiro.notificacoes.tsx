@@ -12,6 +12,8 @@ export const Route = createFileRoute("/passageiro/notificacoes")({
     { name: "description", content: "Avisos de atraso, chegada de ônibus, desvios e novidades das suas linhas." },
     { property: "og:title", content: "Notificações — ViaBus" },
     { property: "og:description", content: "Todos os avisos da sua operação de transporte em um só lugar." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Pagina,
 });

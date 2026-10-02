@@ -13,6 +13,8 @@ export const Route = createFileRoute("/passageiro/perfil")({
     { name: "description", content: "Dados da conta, preferências de notificação e histórico de viagens do passageiro." },
     { property: "og:title", content: "Meu perfil — ViaBus" },
     { property: "og:description", content: "Gerencie seus dados e preferências de aviso no ViaBus." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: Pagina,
 });
@@ -32,7 +34,7 @@ function Pagina() {
         </div>
       </Card>
       <div className="grid gap-4 sm:grid-cols-3">
-        {[{ r: "Viagens no mês", v: "42" }, { r: "Linha mais usada", v: "203" }, { r: "Economia estimada", v: "R$ 186" }].map((i) => (
+        {[{ r: "Viagens no mês", v: "42" }, { r: "Rotas favoritas", v: "Explore" }, { r: "Economia estimada", v: "R$ 186" }].map((i) => (
           <Card key={i.r} className="gap-0 rounded-2xl border-border/70 p-5 shadow-soft"><p className="text-2xl font-extrabold">{i.v}</p><p className="text-sm text-muted-foreground">{i.r}</p></Card>
         ))}
       </div>
